@@ -1,0 +1,5 @@
+{
+  "name": "Copy of Bitácora Digital de Obra (BDO)",
+  "description": "A web application to manage a Digital Work Log for construction projects, complying with the requirements of chapter 6.4 of the contract management manual. It allows for creating, viewing, filtering, and exporting log entries with attachments and approval workflows.",
+  "requestFramePermissions": []
+}
