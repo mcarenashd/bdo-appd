@@ -69,6 +69,11 @@ export interface Change {
   newValue: string;
 }
 
+export interface Signature {
+  signer: User;
+  signedAt: string; // ISO date string
+}
+
 
 // LOGBOOK ENTRIES (ANOTACIONES)
 export enum EntryStatus {
@@ -105,6 +110,8 @@ export interface LogEntry {
   assignees: User[];
   isConfidential: boolean;
   history?: Change[];
+  requiredSignatories: User[];
+  signatures: Signature[];
 }
 
 // COMMUNICATIONS (COMUNICACIONES)
@@ -195,6 +202,8 @@ export interface Acta {
   summary: string;
   commitments: Commitment[];
   attachments: Attachment[];
+  requiredSignatories: User[];
+  signatures: Signature[];
 }
 
 
@@ -336,4 +345,20 @@ export interface Report {
   summary: string;
   attachments: Attachment[];
   author: User;
+  requiredSignatories: User[];
+  signatures: Signature[];
+}
+
+// NOTIFICATIONS
+export interface Notification {
+  id: string;
+  type: 'commitment_due' | 'log_entry_assigned';
+  urgency: 'overdue' | 'due_soon' | 'info';
+  message: string;
+  sourceDescription: string;
+  relatedView: 'minutes' | 'logbook';
+  relatedItemType: 'acta' | 'logEntry';
+  relatedItemId: string;
+  createdAt: string;
+  isRead: boolean;
 }

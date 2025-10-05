@@ -8,6 +8,8 @@ import Input from './ui/Input';
 import Select from './ui/Select';
 import ChangeHistory from './ChangeHistory';
 import { LockClosedIcon, XMarkIcon, PaperClipIcon } from './icons/Icon';
+import SignatureBlock from './SignatureBlock';
+import SignatureModal from './SignatureModal';
 
 interface EntryDetailModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ interface EntryDetailModalProps {
   entry: LogEntry;
   onUpdate: (updatedEntry: LogEntry) => void;
   onAddComment: (entryId: string, commentText: string) => Promise<void>;
+  onSign: (documentId: string, documentType: 'logEntry', signer: User) => Promise<LogEntry | any>;
   currentUser: User;
   allUsers: User[];
 }
@@ -26,12 +29,13 @@ const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label,
     </div>
 );
 
-const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, entry, onUpdate, onAddComment, currentUser, allUsers }) => {
+const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, entry, onUpdate, onAddComment, onSign, currentUser, allUsers }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState<LogEntry>(entry);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [newComment, setNewComment] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -127,6 +131,20 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
     setNewFiles([]);
   };
 
+  const handleConfirmSignature = async (password: string): Promise<{ success: boolean, error?: string }> => {
+    // In a real app, you would verify the password against the backend.
+    // Here we simulate it with the known mock password.
+    if (password !== 'password123') {
+        return { success: false, error: "Contraseña incorrecta." };
+    }
+    const updatedEntry = await onSign(entry.id, 'logEntry', currentUser);
+    if(updatedEntry) {
+        setEditedEntry(updatedEntry);
+    }
+    setIsSignatureModalOpen(false);
+    return { success: true };
+  };
+
   const handleCancel = () => {
     setEditedEntry(entry);
     setIsEditing(false);
@@ -135,7 +153,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
   };
 
   const { folioNumber, author, comments } = entry;
-  const { title, description, activityStartDate, activityEndDate, location, subject, type, status, isConfidential, history, createdAt, attachments, assignees } = editedEntry;
+  const { title, description, activityStartDate, activityEndDate, location, subject, type, status, isConfidential, history, createdAt, attachments, assignees, requiredSignatories, signatures } = editedEntry;
 
   const toDatetimeLocal = (isoString: string) => {
     const date = new Date(isoString);
@@ -148,6 +166,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
   const canEdit = currentUser.id === entry.author.id || currentUser.role === UserRole.ADMIN;
   
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={`Detalle Anotación - Folio #${folioNumber}`} size="2xl">
         <div className="space-y-6">
             <div className="pb-4 border-b">
@@ -323,6 +342,17 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                 )
             )}
 
+            {!isEditing && (
+                 <SignatureBlock
+                    requiredSignatories={requiredSignatories}
+                    signatures={signatures}
+                    currentUser={currentUser}
+                    onSignRequest={() => setIsSignatureModalOpen(true)}
+                    documentType="Anotación"
+                />
+            )}
+
+
             <div>
                 <h4 className="text-md font-semibold text-gray-800">Comentarios</h4>
                 {comments.length > 0 ? (
@@ -389,6 +419,13 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
             )}
         </div>
     </Modal>
+    <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onConfirm={handleConfirmSignature}
+        userToSign={currentUser}
+    />
+    </>
   );
 };
 

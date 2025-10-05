@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Acta, ActaStatus, Commitment, CommitmentStatus, User, Attachment, ActaArea } from '../types';
 import { MOCK_USERS } from '../services/mockData';
@@ -93,6 +94,9 @@ const ActaFormModal: React.FC<ActaFormModalProps> = ({ isOpen, onClose, onSave }
       status,
       commitments: finalCommitments,
       attachments: newAttachments,
+      // Fix: Add missing properties to satisfy the Acta type
+      requiredSignatories: [],
+      signatures: [],
     });
 
     // Reset form

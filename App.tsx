@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import ProjectDashboard from './components/ProjectDashboard';
@@ -17,7 +17,7 @@ import PendingTasksDashboard from './components/PendingTasksDashboard';
 import ExportDashboard from './components/ExportDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginScreen from './components/auth/LoginScreen';
-import { ReportScope } from './types';
+import { ReportScope, Notification, CommitmentStatus } from './types';
 
 type InitialItemToOpen = { type: 'acta' | 'logEntry'; id: string };
 
@@ -25,9 +25,68 @@ const MainApp = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentView, setCurrentView] = useState('summary');
   const [initialItemToOpen, setInitialItemToOpen] = useState<InitialItemToOpen | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   
   const api = useMockApi();
-  const { projectDetails, contractModifications, isLoading } = api;
+  const { user } = useAuth();
+  const { projectDetails, contractModifications, isLoading, actas: apiActas } = api;
+
+  useEffect(() => {
+    if (!apiActas || !user) return;
+
+    const generatedNotifications: Notification[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    apiActas.forEach(acta => {
+        acta.commitments.forEach(commitment => {
+            if (commitment.responsible.id === user.id && commitment.status === CommitmentStatus.PENDING) {
+                const dueDate = new Date(commitment.dueDate);
+                const localDueDate = new Date(dueDate.valueOf() + dueDate.getTimezoneOffset() * 60 * 1000);
+                localDueDate.setHours(0,0,0,0);
+
+                const timeDiff = localDueDate.getTime() - today.getTime();
+                const daysUntilDue = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+                let notification: Notification | null = null;
+
+                if (daysUntilDue < 0) {
+                    notification = {
+                        id: `notif-${commitment.id}`,
+                        type: 'commitment_due',
+                        urgency: 'overdue',
+                        message: `El compromiso "${commitment.description}" está vencido.`,
+                        sourceDescription: `Acta: ${acta.number}`,
+                        relatedView: 'minutes',
+                        relatedItemType: 'acta',
+                        relatedItemId: acta.id,
+                        createdAt: new Date().toISOString(),
+                        isRead: false,
+                    };
+                } else if (daysUntilDue <= 3) {
+                     notification = {
+                        id: `notif-${commitment.id}`,
+                        type: 'commitment_due',
+                        urgency: 'due_soon',
+                        message: `El compromiso "${commitment.description}" vence ${daysUntilDue === 0 ? 'hoy' : `en ${daysUntilDue} día(s)`}.`,
+                        sourceDescription: `Acta: ${acta.number}`,
+                        relatedView: 'minutes',
+                        relatedItemType: 'acta',
+                        relatedItemId: acta.id,
+                        createdAt: new Date().toISOString(),
+                        isRead: false,
+                    };
+                }
+
+                if (notification) {
+                    generatedNotifications.push(notification);
+                }
+            }
+        });
+    });
+    setNotifications(generatedNotifications);
+  }, [apiActas, user]);
+
 
   const handleNavigateAndOpen = (view: string, item: InitialItemToOpen) => {
     setInitialItemToOpen(item);
@@ -86,7 +145,12 @@ const MainApp = () => {
         setCurrentView={setCurrentView}
       />
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-64">
-        <Header setIsSidebarOpen={setIsSidebarOpen} />
+        <Header 
+          setIsSidebarOpen={setIsSidebarOpen}
+          notifications={notifications}
+          setNotifications={setNotifications}
+          onNotificationClick={(notification: Notification) => handleNavigateAndOpen(notification.relatedView, { type: notification.relatedItemType, id: notification.relatedItemId })}
+        />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
           <div className="container mx-auto px-6 py-8">
             {renderContent()}

@@ -17,7 +17,7 @@ interface WeeklyReportsDashboardProps {
 
 const WeeklyReportsDashboard: React.FC<WeeklyReportsDashboardProps> = ({ project, api, reportScope }) => {
   const { user } = useAuth();
-  const { reports, isLoading, error, addReport, updateReport } = api;
+  const { reports, isLoading, error, addReport, updateReport, addSignature } = api;
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -56,6 +56,8 @@ const WeeklyReportsDashboard: React.FC<WeeklyReportsDashboardProps> = ({ project
     await updateReport(updatedReport);
     setSelectedReport(updatedReport);
   }
+
+  if (!user) return null;
 
   return (
     <div className="space-y-6">
@@ -101,6 +103,8 @@ const WeeklyReportsDashboard: React.FC<WeeklyReportsDashboardProps> = ({ project
           onClose={handleCloseDetail}
           report={selectedReport}
           onUpdate={handleUpdateReport}
+          onSign={addSignature}
+          currentUser={user}
         />
       )}
 

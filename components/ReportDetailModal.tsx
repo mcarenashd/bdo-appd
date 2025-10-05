@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Report, ReportStatus } from '../types';
+import { Report, ReportStatus, User } from '../types';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 import Select from './ui/Select';
 import ReportStatusBadge from './ReportStatusBadge';
 import AttachmentItem from './AttachmentItem';
+import SignatureBlock from './SignatureBlock';
+import SignatureModal from './SignatureModal';
 
 interface ReportDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   report: Report;
   onUpdate: (updatedReport: Report) => void;
+  onSign: (documentId: string, documentType: 'report', signer: User) => Promise<Report | any>;
+  currentUser: User;
 }
 
 const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
@@ -20,8 +24,9 @@ const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label,
     </div>
 );
 
-const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, report, onUpdate }) => {
+const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, report, onUpdate, onSign, currentUser }) => {
     const [editedReport, setEditedReport] = useState<Report>(report);
+    const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
     useEffect(() => {
         setEditedReport(report);
@@ -30,6 +35,20 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, 
     const handleStatusChange = (newStatus: ReportStatus) => {
         setEditedReport(prev => ({...prev, status: newStatus}));
     }
+    
+    const handleConfirmSignature = async (password: string): Promise<{ success: boolean, error?: string }> => {
+        if (password !== 'password123') { // Mock password check
+            return { success: false, error: "Contraseña incorrecta." };
+        }
+        const updatedReport = await onSign(report.id, 'report', currentUser);
+        if(updatedReport) {
+            setEditedReport(updatedReport);
+            onUpdate(updatedReport);
+        }
+        setIsSignatureModalOpen(false);
+        return { success: true };
+    };
+
 
     const handleSaveChanges = () => {
         onUpdate(editedReport);
@@ -37,6 +56,7 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, 
     };
 
     return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={`Detalle de Informe - ${report.number}`} size="2xl">
         <div className="space-y-6">
             <div className="pb-4 border-b">
@@ -76,6 +96,14 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, 
                     {Object.values(ReportStatus).map(s => <option key={s} value={s}>{s}</option>)}
                 </Select>
             </div>
+            
+            <SignatureBlock
+                requiredSignatories={editedReport.requiredSignatories}
+                signatures={editedReport.signatures}
+                currentUser={currentUser}
+                onSignRequest={() => setIsSignatureModalOpen(true)}
+                documentType="Informe"
+            />
 
         </div>
         <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-2">
@@ -83,6 +111,13 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, 
              <Button variant="primary" onClick={handleSaveChanges}>Guardar Cambios</Button>
         </div>
     </Modal>
+    <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onConfirm={handleConfirmSignature}
+        userToSign={currentUser}
+    />
+    </>
   );
 };
 

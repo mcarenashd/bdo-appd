@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 // Fix: Corrected import path for types
 import { LogEntry, EntryType, EntryStatus, User } from '../types';
@@ -98,6 +99,9 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
       status: EntryStatus.SUBMITTED,
       attachments: [], // File upload would be implemented here
       assignees,
+      // Fix: Add missing properties to satisfy the LogEntry type
+      requiredSignatories: [],
+      signatures: [],
     });
   };
 

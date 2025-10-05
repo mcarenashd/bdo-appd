@@ -17,7 +17,7 @@ interface MonthlyReportsDashboardProps {
 
 const MonthlyReportsDashboard: React.FC<MonthlyReportsDashboardProps> = ({ project, api, reportScope }) => {
   const { user } = useAuth();
-  const { reports, isLoading, error, addReport, updateReport } = api;
+  const { reports, isLoading, error, addReport, updateReport, addSignature } = api;
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -57,6 +57,8 @@ const MonthlyReportsDashboard: React.FC<MonthlyReportsDashboardProps> = ({ proje
     setSelectedReport(updatedReport);
   }
 
+  if (!user) return null;
+  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -101,6 +103,8 @@ const MonthlyReportsDashboard: React.FC<MonthlyReportsDashboardProps> = ({ proje
           onClose={handleCloseDetail}
           report={selectedReport}
           onUpdate={handleUpdateReport}
+          onSign={addSignature}
+          currentUser={user}
         />
       )}
 

@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
-import { Report, ReportScope } from '../types';
+import { Report, ReportScope, User, ReportStatus } from '../types';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import { XMarkIcon } from './icons/Icon';
+import { MOCK_USERS } from '../services/mockData';
 
 interface ReportFormModalProps {
   isOpen: boolean;
@@ -65,6 +67,9 @@ const ReportFormModal: React.FC<ReportFormModalProps> = ({ isOpen, onClose, onSa
       summary,
       type: reportType,
       reportScope,
+      // Fix: Add missing properties to satisfy the Report type
+      requiredSignatories: [],
+      signatures: [],
     }, files);
 
     resetForm();

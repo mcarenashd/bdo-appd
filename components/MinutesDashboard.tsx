@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Project, Acta } from '../types';
+import { Project, Acta, User } from '../types';
 import { useMockApi } from '../hooks/useMockApi';
 import Button from './ui/Button';
 import { PlusIcon, ClipboardDocumentListIcon } from './icons/Icon';
@@ -8,6 +8,8 @@ import ActaDetailModal from './ActaDetailModal';
 import ActaFormModal from './ActaFormModal';
 import EmptyState from './ui/EmptyState';
 import ActaFilterBar from './ActaFilterBar';
+import { useAuth } from '../contexts/AuthContext';
+import { MOCK_USERS } from '../services/mockData';
 
 interface MinutesDashboardProps {
   project: Project;
@@ -17,7 +19,8 @@ interface MinutesDashboardProps {
 }
 
 const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initialItemToOpen, clearInitialItem }) => {
-  const { actas, isLoading, error, addActa, updateActa, sendCommitmentReminderEmail } = api;
+  const { user } = useAuth();
+  const { actas, isLoading, error, addActa, updateActa, sendCommitmentReminderEmail, addSignature } = api;
   const [selectedActa, setSelectedActa] = useState<Acta | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -92,6 +95,8 @@ const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initi
   };
 
 
+  if (!user) return null;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -139,6 +144,8 @@ const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initi
           acta={selectedActa}
           onUpdate={handleUpdateActa}
           onSendReminder={sendCommitmentReminderEmail}
+          onSign={addSignature}
+          currentUser={user}
         />
       )}
 

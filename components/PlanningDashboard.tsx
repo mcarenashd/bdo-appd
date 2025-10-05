@@ -58,6 +58,7 @@ const KPICard: React.FC<{ title: string; value: string; progress?: number; varia
 
 const PlanningDashboard: React.FC<{ project: Project; api: ReturnType<typeof useMockApi> }> = ({ project, api }) => {
   const { projectTasks: flatMockTasks, isLoading } = api;
+  const [flatTasks, setFlatTasks] = useState<Omit<ProjectTask, 'children'>[]>([]);
   const [hierarchicalTasks, setHierarchicalTasks] = useState<ProjectTask[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -66,10 +67,32 @@ const PlanningDashboard: React.FC<{ project: Project; api: ReturnType<typeof use
 
   // Initial processing for mock data
   useEffect(() => {
-    if (flatMockTasks.length > 0 && hierarchicalTasks.length === 0) {
-      setHierarchicalTasks(buildTaskTree(flatMockTasks));
+    if (flatMockTasks.length > 0) {
+      setFlatTasks(flatMockTasks);
     }
-  }, [flatMockTasks, hierarchicalTasks]);
+  }, [flatMockTasks]);
+  
+  useEffect(() => {
+      setHierarchicalTasks(buildTaskTree(flatTasks));
+  }, [flatTasks]);
+
+  const handleUpdateGanttTasks = (taskId: string, newDates: { startDate: Date; endDate: Date }) => {
+    setFlatTasks(prevTasks => {
+        const taskIndex = prevTasks.findIndex(t => t.id === taskId);
+        if (taskIndex === -1) return prevTasks;
+        
+        const updatedTask = {
+            ...prevTasks[taskIndex],
+            startDate: newDates.startDate.toISOString(),
+            endDate: newDates.endDate.toISOString(),
+            duration: Math.ceil((newDates.endDate.getTime() - newDates.startDate.getTime()) / (1000 * 3600 * 24)) + 1
+        };
+        
+        const newTasks = [...prevTasks];
+        newTasks[taskIndex] = updatedTask;
+        return newTasks;
+    });
+  };
   
   const processedHierarchicalTasks = useMemo((): ProcessedProjectTask[] => {
         const statusDate = new Date();
@@ -175,7 +198,7 @@ const PlanningDashboard: React.FC<{ project: Project; api: ReturnType<typeof use
             throw new Error("No se encontraron tareas (<Task>) en el archivo XML.");
         }
         
-        const flatTasks: (Omit<ProjectTask, 'children'> | null)[] = Array.from(tasksNodeList).map((taskNode): Omit<ProjectTask, 'children'> | null => {
+        const loadedFlatTasks: (Omit<ProjectTask, 'children'> | null)[] = Array.from(tasksNodeList).map((taskNode): Omit<ProjectTask, 'children'> | null => {
           const getTagContent = (tagName: string): string | undefined => taskNode.querySelector(tagName)?.textContent || undefined;
           
           const startDateStr = getTagContent('Start');
@@ -205,23 +228,23 @@ const PlanningDashboard: React.FC<{ project: Project; api: ReturnType<typeof use
           };
         });
         
-        const validTasks = flatTasks.filter((task): task is Omit<ProjectTask, 'children'> => task !== null);
+        const validTasks = loadedFlatTasks.filter((task): task is Omit<ProjectTask, 'children'> => task !== null);
 
         if (validTasks.length === 0) {
             throw new Error("El archivo XML no contiene tareas válidas con fechas de inicio y fin.");
         }
         
-        setHierarchicalTasks(buildTaskTree(validTasks));
+        setFlatTasks(validTasks);
 
       } catch (e: any) {
          console.error("Error al procesar el archivo XML:", e);
          setError(e.message || "No se pudo procesar el archivo XML. Verifique el formato y que contenga las etiquetas esperadas (Task, UID, Name, Start, Finish, etc.).");
-         setHierarchicalTasks(buildTaskTree(flatMockTasks)); // Revert on error
+         setFlatTasks(flatMockTasks); // Revert on error
       }
     };
     reader.onerror = () => {
         setError("Error al leer el archivo.");
-        setHierarchicalTasks(buildTaskTree(flatMockTasks)); // Revert on error
+        setFlatTasks(flatMockTasks); // Revert on error
     }
     reader.readAsText(file);
   };
@@ -343,7 +366,11 @@ const PlanningDashboard: React.FC<{ project: Project; api: ReturnType<typeof use
       )}
 
       {processedHierarchicalTasks.length > 0 && !isLoading && (
-        <GanttChart tasks={processedHierarchicalTasks} ref={ganttChartRef} />
+        <GanttChart 
+            tasks={processedHierarchicalTasks} 
+            ref={ganttChartRef}
+            onTasksUpdate={handleUpdateGanttTasks} 
+        />
       )}
     </div>
   );

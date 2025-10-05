@@ -1,12 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Project, User, CommitmentStatus, EntryStatus, Acta, LogEntry } from '../types';
 import { useMockApi } from '../hooks/useMockApi';
 import EmptyState from './ui/EmptyState';
-import { BellIcon } from './icons/Icon';
+import { BellIcon, CalendarIcon, ListBulletIcon } from './icons/Icon';
 import PendingTaskCard from './PendingTaskCard';
 import { useAuth } from '../contexts/AuthContext';
+import PendingTasksCalendarView from './PendingTasksCalendarView';
 
-type PendingCommitment = {
+export type PendingCommitment = {
     type: 'commitment';
     id: string;
     description: string;
@@ -15,7 +16,7 @@ type PendingCommitment = {
     parentId: string; // The ID of the parent Acta
 };
 
-type PendingLogEntry = {
+export type PendingLogEntry = {
     type: 'logEntry';
     id: string;
     description: string;
@@ -24,7 +25,7 @@ type PendingLogEntry = {
     parentId: string; // The ID of the LogEntry itself
 };
 
-type PendingTask = PendingCommitment | PendingLogEntry;
+export type PendingTask = PendingCommitment | PendingLogEntry;
 
 interface PendingTasksDashboardProps {
   api: ReturnType<typeof useMockApi>;
@@ -34,6 +35,7 @@ interface PendingTasksDashboardProps {
 const PendingTasksDashboard: React.FC<PendingTasksDashboardProps> = ({ api, onNavigate }) => {
   const { user } = useAuth();
   const { actas, logEntries, isLoading, error } = api;
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   const pendingTasks = useMemo((): PendingTask[] => {
     if (!user) return [];
@@ -103,9 +105,29 @@ const PendingTasksDashboard: React.FC<PendingTasksDashboardProps> = ({ api, onNa
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Mis Pendientes</h2>
-        <p className="text-sm text-gray-500">Un resumen de todas tus tareas y compromisos asignados.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h2 className="text-2xl font-bold text-gray-900">Mis Pendientes</h2>
+            <p className="text-sm text-gray-500">Un resumen de todas tus tareas y compromisos asignados.</p>
+        </div>
+        <div className="flex items-center bg-gray-200 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('list')}
+            title="Vista de Lista"
+            className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors flex items-center gap-2 ${viewMode === 'list' ? 'bg-white text-brand-primary shadow' : 'text-gray-600 hover:bg-gray-300/50'}`}
+          >
+            <ListBulletIcon className="h-5 w-5" />
+            <span>Lista</span>
+          </button>
+          <button
+            onClick={() => setViewMode('calendar')}
+            title="Vista de Calendario"
+            className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white text-brand-primary shadow' : 'text-gray-600 hover:bg-gray-300/50'}`}
+          >
+            <CalendarIcon className="h-5 w-5" />
+            <span>Calendario</span>
+          </button>
+        </div>
       </div>
 
       {isLoading && <div className="text-center p-8">Cargando tus tareas pendientes...</div>}
@@ -114,32 +136,38 @@ const PendingTasksDashboard: React.FC<PendingTasksDashboardProps> = ({ api, onNa
       {!isLoading && !error && (
         <>
           {pendingTasks.length > 0 ? (
-            <div className="space-y-8">
-                {overdue.length > 0 && (
-                    <section>
-                        <h3 className="text-lg font-semibold text-red-600 mb-3">Vencidas</h3>
-                        <div className="space-y-3">
-                            {overdue.map(task => <PendingTaskCard key={task.id} task={task} onSelect={handleViewDetail} urgency="overdue" />)}
-                        </div>
-                    </section>
-                )}
-                 {dueSoon.length > 0 && (
-                    <section>
-                        <h3 className="text-lg font-semibold text-yellow-600 mb-3">Vencen Pronto (Próximos 7 días)</h3>
-                        <div className="space-y-3">
-                            {dueSoon.map(task => <PendingTaskCard key={task.id} task={task} onSelect={handleViewDetail} urgency="dueSoon" />)}
-                        </div>
-                    </section>
-                )}
-                 {upcoming.length > 0 && (
-                    <section>
-                        <h3 className="text-lg font-semibold text-gray-700 mb-3">Próximas</h3>
-                        <div className="space-y-3">
-                            {upcoming.map(task => <PendingTaskCard key={task.id} task={task} onSelect={handleViewDetail} urgency="upcoming" />)}
-                        </div>
-                    </section>
-                )}
-            </div>
+            <>
+              {viewMode === 'list' ? (
+                <div className="space-y-8">
+                    {overdue.length > 0 && (
+                        <section>
+                            <h3 className="text-lg font-semibold text-red-600 mb-3">Vencidas</h3>
+                            <div className="space-y-3">
+                                {overdue.map(task => <PendingTaskCard key={task.id} task={task} onSelect={handleViewDetail} urgency="overdue" />)}
+                            </div>
+                        </section>
+                    )}
+                    {dueSoon.length > 0 && (
+                        <section>
+                            <h3 className="text-lg font-semibold text-yellow-600 mb-3">Vencen Pronto (Próximos 7 días)</h3>
+                            <div className="space-y-3">
+                                {dueSoon.map(task => <PendingTaskCard key={task.id} task={task} onSelect={handleViewDetail} urgency="dueSoon" />)}
+                            </div>
+                        </section>
+                    )}
+                    {upcoming.length > 0 && (
+                        <section>
+                            <h3 className="text-lg font-semibold text-gray-700 mb-3">Próximas</h3>
+                            <div className="space-y-3">
+                                {upcoming.map(task => <PendingTaskCard key={task.id} task={task} onSelect={handleViewDetail} urgency="upcoming" />)}
+                            </div>
+                        </section>
+                    )}
+                </div>
+              ) : (
+                <PendingTasksCalendarView tasks={pendingTasks} onTaskSelect={handleViewDetail} />
+              )}
+            </>
           ) : (
             <EmptyState
               icon={<BellIcon />}

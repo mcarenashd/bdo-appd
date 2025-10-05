@@ -137,6 +137,17 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({ project, 
           return sum + (contractItem ? item.quantity * contractItem.unitPrice : 0);
       }, 0);
   }
+  
+  const getValueOrDays = (mod: ContractModification) => {
+    if (mod.type === ModificationType.ADDITION) {
+      return formatCurrency(mod.value || 0);
+    }
+    if (mod.type === ModificationType.TIME_EXTENSION) {
+      return `${mod.days || 0} días`;
+    }
+    return '—'; // Return em-dash for other types
+  };
+
 
   return (
     <div className="space-y-8">
@@ -183,8 +194,7 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({ project, 
                             <td className="px-6 py-4">{mod.type}</td>
                             <td className="px-6 py-4">{new Date(mod.date).toLocaleDateString('es-CO')}</td>
                             <td className="px-6 py-4 font-semibold text-right">
-                                {mod.type === ModificationType.ADDITION ? formatCurrency(mod.value || 0) : ''}
-                                {mod.type === ModificationType.TIME_EXTENSION ? `${mod.days} días` : ''}
+                                {getValueOrDays(mod)}
                             </td>
                         </tr>
                     ))}

@@ -2,21 +2,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ChevronDownIcon, BellIcon, Bars3Icon, ChevronUpIcon } from '../icons/Icon';
-import { User } from '../../types';
+import { Notification } from '../../types';
+import NotificationPanel from '../notifications/NotificationPanel';
 
 interface HeaderProps {
   setIsSidebarOpen: (isOpen: boolean) => void;
+  notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
+  onNotificationClick: (notification: Notification) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
+const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen, notifications, setNotifications, onNotificationClick }) => {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationPanelOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -24,6 +35,14 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+  
+  const handleToggleNotifications = () => {
+    setIsNotificationPanelOpen(prev => !prev);
+    if (unreadCount > 0) {
+        // Mark all as read when opening
+        setNotifications(prev => prev.map(n => ({...n, isRead: true})));
+    }
+  };
 
   if (!user) {
     return null; // Don't render header if no user is logged in
@@ -43,10 +62,30 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen }) => {
       </div>
 
       <div className="flex items-center space-x-4">
-        <button className="p-2 text-gray-500 rounded-full hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary">
-          <span className="sr-only">View notifications</span>
-          <BellIcon />
-        </button>
+        <div className="relative" ref={notificationRef}>
+            <button 
+                onClick={handleToggleNotifications}
+                className="relative p-2 text-gray-500 rounded-full hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary"
+            >
+                <span className="sr-only">View notifications</span>
+                <BellIcon />
+                {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 flex h-4 w-4">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-white text-xs items-center justify-center">{unreadCount}</span>
+                    </span>
+                )}
+            </button>
+            <NotificationPanel 
+                isOpen={isNotificationPanelOpen}
+                notifications={notifications}
+                onNotificationClick={(notification) => {
+                    onNotificationClick(notification);
+                    setIsNotificationPanelOpen(false); // Close panel on click
+                }}
+            />
+        </div>
+
 
         <div className="relative" ref={dropdownRef}>
           <button 

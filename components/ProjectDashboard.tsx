@@ -26,7 +26,7 @@ interface ProjectDashboardProps {
 
 const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project, api, initialItemToOpen, clearInitialItem }) => {
   const { user } = useAuth();
-  const { logEntries, isLoading, error, addEntry, updateEntry, addCommentToEntry } = api;
+  const { logEntries, isLoading, error, addEntry, updateEntry, addCommentToEntry, addSignature } = api;
   const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -244,6 +244,7 @@ ${attachments || '\t(Sin adjuntos)'}
           entry={selectedEntry} 
           onUpdate={handleUpdateEntry}
           onAddComment={handleAddComment}
+          onSign={addSignature}
           currentUser={user}
           allUsers={MOCK_USERS}
         />

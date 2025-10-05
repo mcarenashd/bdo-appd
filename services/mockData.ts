@@ -65,6 +65,11 @@ export const MOCK_LOG_ENTRIES: LogEntry[] = [
     assignees: [],
     isConfidential: false,
     history: [],
+    requiredSignatories: [MOCK_USERS[0], MOCK_USERS[1]],
+    signatures: [
+        { signer: MOCK_USERS[0], signedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString() },
+        { signer: MOCK_USERS[1], signedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
   },
   {
     id: 'entry-2',
@@ -85,6 +90,10 @@ export const MOCK_LOG_ENTRIES: LogEntry[] = [
     assignees: [MOCK_USERS[0]],
     isConfidential: false,
     history: [],
+    requiredSignatories: [MOCK_USERS[2], MOCK_USERS[1]],
+    signatures: [
+        { signer: MOCK_USERS[2], signedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+    ],
   },
   {
     id: 'entry-3',
@@ -105,6 +114,8 @@ export const MOCK_LOG_ENTRIES: LogEntry[] = [
     assignees: [MOCK_USERS[1], MOCK_USERS[3]],
     isConfidential: true,
     history: [],
+    requiredSignatories: [MOCK_USERS[0], MOCK_USERS[1]],
+    signatures: [],
   },
 ];
 
@@ -186,6 +197,11 @@ export const MOCK_ACTAS: Acta[] = [
         summary: 'Revisión de avance general, definición de próximos frentes de trabajo y discusión de RFI-001-Pavimentos. Se definen compromisos clave para la próxima semana.',
         commitments: MOCK_COMMITMENTS,
         attachments: [{ id: 'att-acta-1', fileName: 'Minuta_Reunion_Sem12.pdf', url: '#', size: 850000, type: 'application/pdf' }],
+        requiredSignatories: [MOCK_USERS[2], MOCK_USERS[1]],
+        signatures: [
+            { signer: MOCK_USERS[2], signedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString() },
+            { signer: MOCK_USERS[1], signedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+        ],
     },
      {
         id: 'acta-2',
@@ -197,6 +213,8 @@ export const MOCK_ACTAS: Acta[] = [
         summary: 'Seguimiento a compromisos de la reunión anterior y planificación de actividades para la semana 14. Se revisa el estado de la solicitud de aprobación de materiales de concreto.',
         commitments: [],
         attachments: [],
+        requiredSignatories: [MOCK_USERS[2], MOCK_USERS[1]],
+        signatures: [],
     },
     {
         id: 'acta-3',
@@ -211,6 +229,10 @@ export const MOCK_ACTAS: Acta[] = [
              { id: 'com-6', description: 'Realizar charla de 5 minutos sobre riesgos en excavaciones a todo el personal.', responsible: MOCK_USERS[2], dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), status: CommitmentStatus.COMPLETED },
         ],
         attachments: [{ id: 'att-acta-2', fileName: 'Informe_Incidente_HSE.pdf', url: '#', size: 1200000, type: 'application/pdf' }],
+        requiredSignatories: [MOCK_USERS[0], MOCK_USERS[1]],
+        signatures: [
+            { signer: MOCK_USERS[0], signedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+        ],
     },
 ];
 
@@ -415,6 +437,11 @@ export const MOCK_REPORTS: Report[] = [
         summary: 'Avance significativo en la cimentación de pilotes del Eje 3. Se completó el 100% de la excavación prevista para la semana. Sin incidentes de seguridad reportados.',
         attachments: [{ id: 'att-rep-w1', fileName: 'Informe_Semanal_25.pdf', url: '#', size: 1572864, type: 'application/pdf' }],
         author: MOCK_USERS[0], // Ana García (Residente)
+        requiredSignatories: [MOCK_USERS[0], MOCK_USERS[1]],
+        signatures: [
+            { signer: MOCK_USERS[0], signedAt: new Date('2024-07-29').toISOString() },
+            { signer: MOCK_USERS[1], signedAt: new Date('2024-07-30').toISOString() },
+        ],
     },
     {
         id: 'rep-w-2',
@@ -430,6 +457,10 @@ export const MOCK_REPORTS: Report[] = [
             { id: 'att-rep-w2-2', fileName: 'Anexo_Fotografico_Sem26.docx', url: '#', size: 4194304, type: 'application/msword' },
         ],
         author: MOCK_USERS[0],
+        requiredSignatories: [MOCK_USERS[0], MOCK_USERS[1]],
+        signatures: [
+            { signer: MOCK_USERS[0], signedAt: new Date('2024-08-05').toISOString() },
+        ],
     },
     {
         id: 'rep-m-1',
@@ -442,6 +473,8 @@ export const MOCK_REPORTS: Report[] = [
         summary: 'Cierre de actividades de cimentaciones. El avance programado del mes fue del 15% y se ejecutó un 13.8%, debido a demoras por condiciones climáticas. Se solicita revisión de las proyecciones para Agosto.',
         attachments: [{ id: 'att-rep-m1', fileName: 'Informe_Mensual_Julio_2024.pdf', url: '#', size: 5242880, type: 'application/pdf' }],
         author: MOCK_USERS[2], // Laura Martinez (Contratista)
+        requiredSignatories: [MOCK_USERS[2], MOCK_USERS[1]],
+        signatures: [],
     },
     {
         id: 'rep-m-2',
@@ -454,6 +487,11 @@ export const MOCK_REPORTS: Report[] = [
         summary: 'Ejecución de actividades de movimiento de tierras y excavaciones profundas según lo programado. Se cumplió con el 100% de las metas del mes.',
         attachments: [],
         author: MOCK_USERS[2],
+        requiredSignatories: [MOCK_USERS[2], MOCK_USERS[1]],
+        signatures: [
+            { signer: MOCK_USERS[2], signedAt: new Date('2024-07-05').toISOString() },
+            { signer: MOCK_USERS[1], signedAt: new Date('2024-07-06').toISOString() },
+        ],
     },
      {
         id: 'rep-w-3',
@@ -466,6 +504,8 @@ export const MOCK_REPORTS: Report[] = [
         summary: 'Se verifican y aprueban las actividades de cimentación del Eje 3 reportadas por el contratista. Se realizaron 3 ensayos de densidad de campo con resultados satisfactorios.',
         attachments: [],
         author: MOCK_USERS[1], // Carlos Rodriguez (Supervisor)
+        requiredSignatories: [MOCK_USERS[1]],
+        signatures: [],
     },
     {
         id: 'rep-m-3',
@@ -478,5 +518,7 @@ export const MOCK_REPORTS: Report[] = [
         summary: 'Consolidación de seguimiento técnico, administrativo, y HSE para el mes de Julio. Se emiten observaciones al informe mensual del contratista.',
         attachments: [],
         author: MOCK_USERS[1],
+        requiredSignatories: [MOCK_USERS[1]],
+        signatures: [],
     },
 ];

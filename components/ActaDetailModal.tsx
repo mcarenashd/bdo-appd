@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Acta, Commitment, CommitmentStatus } from '../types';
+import { Acta, Commitment, CommitmentStatus, User } from '../types';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 import AttachmentItem from './AttachmentItem';
 import ActaStatusBadge from './ActaStatusBadge';
 import { ClockIcon } from './icons/Icon';
 import ActaAreaBadge from './ActaAreaBadge';
+import SignatureBlock from './SignatureBlock';
+import SignatureModal from './SignatureModal';
 
 const EmailIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -19,6 +21,8 @@ interface ActaDetailModalProps {
   acta: Acta;
   onUpdate: (updatedActa: Acta) => void;
   onSendReminder: (commitment: Commitment, acta: Acta) => Promise<void>;
+  onSign: (documentId: string, documentType: 'acta', signer: User) => Promise<Acta | any>;
+  currentUser: User;
 }
 
 const getDueDateColor = (dueDateStr: string, status: CommitmentStatus) => {
@@ -39,8 +43,9 @@ const getDueDateColor = (dueDateStr: string, status: CommitmentStatus) => {
 };
 
 
-const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta, onUpdate, onSendReminder }) => {
+const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta, onUpdate, onSendReminder, onSign, currentUser }) => {
   const [editedActa, setEditedActa] = useState<Acta>(acta);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
   useEffect(() => {
     setEditedActa(acta);
@@ -61,15 +66,30 @@ const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta
     onSendReminder(commitment, acta);
     alert(`Recordatorio enviado a ${commitment.responsible.name} (${commitment.responsible.email})`);
   };
+  
+  const handleConfirmSignature = async (password: string): Promise<{ success: boolean, error?: string }> => {
+    // Mock password check
+    if (password !== 'password123') {
+        return { success: false, error: "Contraseña incorrecta." };
+    }
+    const updatedActa = await onSign(acta.id, 'acta', currentUser);
+    if(updatedActa) {
+        setEditedActa(updatedActa);
+        onUpdate(updatedActa); // also notify parent of the immediate change
+    }
+    setIsSignatureModalOpen(false);
+    return { success: true };
+  };
 
   const handleSaveChanges = () => {
     onUpdate(editedActa);
     onClose();
   };
   
-  const { number, title, date, status, summary, attachments, area } = editedActa;
+  const { number, title, date, status, summary, attachments, area, requiredSignatories, signatures, commitments } = editedActa;
   
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={`Detalle de Acta - ${number}`} size="2xl">
         <div className="space-y-6">
             <div className="pb-4 border-b">
@@ -91,12 +111,12 @@ const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta
                 <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{summary}</p>
             </div>
 
-            {editedActa.commitments.length > 0 && (
+            {commitments.length > 0 && (
                  <div>
                     <h4 className="text-md font-semibold text-gray-800">Compromisos Acordados</h4>
                     <div className="mt-2 border border-gray-200 rounded-lg">
                         <ul className="divide-y divide-gray-200">
-                        {editedActa.commitments.map((commitment: Commitment) => (
+                        {commitments.map((commitment: Commitment) => (
                             <li key={commitment.id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-start gap-3">
                                 <div className="flex-1 flex items-start">
                                     <input
@@ -144,6 +164,14 @@ const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta
                     </ul>
                 </div>
             )}
+            
+            <SignatureBlock
+                requiredSignatories={requiredSignatories}
+                signatures={signatures}
+                currentUser={currentUser}
+                onSignRequest={() => setIsSignatureModalOpen(true)}
+                documentType="Acta"
+            />
 
         </div>
         <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-2">
@@ -151,6 +179,13 @@ const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta
              <Button variant="primary" onClick={handleSaveChanges}>Guardar Cambios</Button>
         </div>
     </Modal>
+     <SignatureModal
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onConfirm={handleConfirmSignature}
+        userToSign={currentUser}
+    />
+    </>
   );
 };
 

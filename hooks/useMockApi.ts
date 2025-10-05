@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment } from '../types';
+import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment, EntryStatus, ActaStatus } from '../types';
 import { MOCK_LOG_ENTRIES, MOCK_COMMUNICATIONS, MOCK_ACTAS, MOCK_COST_ACTAS, MOCK_USER, MOCK_WORK_ACTAS, MOCK_CONTRACT_ITEMS, MOCK_PROJECT, MOCK_CONTROL_POINTS, MOCK_PROJECT_TASKS, MOCK_CONTRACT_MODIFICATIONS, MOCK_PROJECT_DETAILS, MOCK_REPORTS, MOCK_USERS } from '../services/mockData';
 
 const API_DELAY = 500; // 500ms delay to simulate network latency
@@ -504,6 +504,70 @@ export const useMockApi = () => {
     });
   };
 
+  const addSignature = async (documentId: string, documentType: 'logEntry' | 'acta' | 'report', signer: User): Promise<LogEntry | Acta | Report | undefined> => {
+      return new Promise((resolve) => {
+          setTimeout(() => {
+              const newSignature = { signer, signedAt: new Date().toISOString() };
+              let updatedDocument: LogEntry | Acta | Report | undefined;
 
-  return { login, logEntries, communications, actas, costActas, workActas, contractItems, controlPoints, projectTasks, contractModifications, projectDetails, reports, isLoading, error, addEntry, updateEntry, addCommentToEntry, addCommunication, addActa, updateCommunicationStatus, updateActa, addCostActa, updateCostActa, setLogEntries, addWorkActa, updateWorkActa, addControlPoint, addPhotoToControlPoint, addContractModification, addReport, updateReport, sendCommitmentReminderEmail };
+              switch (documentType) {
+                  case 'logEntry':
+                      setLogEntries(prev => {
+                          const newEntries = prev.map(entry => {
+                              if (entry.id === documentId) {
+                                  const updatedSignatures = [...entry.signatures, newSignature];
+                                  let newStatus = entry.status;
+                                  if (entry.requiredSignatories.length > 0 && updatedSignatures.length >= entry.requiredSignatories.length) {
+                                      newStatus = EntryStatus.APPROVED;
+                                  }
+                                  updatedDocument = { ...entry, signatures: updatedSignatures, status: newStatus, updatedAt: new Date().toISOString() };
+                                  return updatedDocument;
+                              }
+                              return entry;
+                          });
+                          return newEntries;
+                      });
+                      break;
+                  case 'acta':
+                      setActas(prev => {
+                           const newActas = prev.map(acta => {
+                              if (acta.id === documentId) {
+                                  const updatedSignatures = [...acta.signatures, newSignature];
+                                  let newStatus = acta.status;
+                                   if (acta.status === ActaStatus.FOR_SIGNATURES && acta.requiredSignatories.length > 0 && updatedSignatures.length >= acta.requiredSignatories.length) {
+                                      newStatus = ActaStatus.SIGNED;
+                                  }
+                                  updatedDocument = { ...acta, signatures: updatedSignatures, status: newStatus };
+                                  return updatedDocument;
+                              }
+                              return acta;
+                          });
+                          return newActas;
+                      });
+                      break;
+                  case 'report':
+                       setReports(prev => {
+                           const newReports = prev.map(report => {
+                              if (report.id === documentId) {
+                                  const updatedSignatures = [...report.signatures, newSignature];
+                                  let newStatus = report.status;
+                                  if (report.status === ReportStatus.SUBMITTED && report.requiredSignatories.length > 0 && updatedSignatures.length >= report.requiredSignatories.length) {
+                                      newStatus = ReportStatus.APPROVED;
+                                  }
+                                  updatedDocument = { ...report, signatures: updatedSignatures, status: newStatus };
+                                  return updatedDocument;
+                              }
+                              return report;
+                          });
+                          return newReports;
+                       });
+                      break;
+              }
+              resolve(updatedDocument);
+          }, API_DELAY);
+      });
+  };
+
+
+  return { login, logEntries, communications, actas, costActas, workActas, contractItems, controlPoints, projectTasks, contractModifications, projectDetails, reports, isLoading, error, addEntry, updateEntry, addCommentToEntry, addCommunication, addActa, updateCommunicationStatus, updateActa, addCostActa, updateCostActa, setLogEntries, addWorkActa, updateWorkActa, addControlPoint, addPhotoToControlPoint, addContractModification, addReport, updateReport, sendCommitmentReminderEmail, addSignature };
 };
