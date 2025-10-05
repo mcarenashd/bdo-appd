@@ -1,3 +1,4 @@
+
 import React from 'react';
 // Fix: Corrected import path for types
 import { EntryStatus, EntryType } from '../types';
@@ -57,7 +58,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         <Select name="user" value={filters.user} onChange={handleInputChange}>
           <option value="all">Todos los usuarios</option>
           {MOCK_USERS.map(user => (
-            <option key={user.id} value={user.id}>{user.name}</option>
+            // Fix: Replaced `user.name` with `user.fullName`.
+            <option key={user.id} value={user.id}>{user.fullName}</option>
           ))}
         </Select>
         <Input name="startDate" type="date" value={filters.startDate} onChange={handleInputChange} label="Desde"/>

@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useMemo } from 'react';
 // Fix: Corrected import path for types
 import { Communication, CommunicationStatus } from '../types';
@@ -162,10 +163,12 @@ const CommunicationDetailModal: React.FC<CommunicationDetailModalProps> = ({ isO
                     <div className="space-y-3 max-h-40 overflow-y-auto pr-2">
                         {communication.statusHistory.slice().reverse().map((change, index) => (
                             <div key={index} className="flex items-start space-x-3">
-                                <img src={change.user.avatarUrl} alt={change.user.name} className="h-8 w-8 rounded-full object-cover mt-1"/>
+                                {/* Fix: Replaced `change.user.name` with `change.user.fullName`. */}
+                                <img src={change.user.avatarUrl} alt={change.user.fullName} className="h-8 w-8 rounded-full object-cover mt-1"/>
                                 <div>
                                     <p className="text-sm text-gray-800">
-                                        <span className="font-semibold">{change.user.name}</span>
+                                        {/* Fix: Replaced `change.user.name` with `change.user.fullName`. */}
+                                        <span className="font-semibold">{change.user.fullName}</span>
                                         <span> cambió a </span>
                                         <span className="font-semibold">{change.status}</span>
                                     </p>

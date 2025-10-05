@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 // Fix: Corrected import path for types
 import { Project, LogEntry, User } from '../types';
@@ -116,10 +117,12 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project, api, initi
   };
 
   const handleExportEntries = () => {
-    const header = `Extracto de Bitácora Digital de Obra\nProyecto: ${project.name}\nContrato: ${project.contractId}\nFecha de Exportación: ${new Date().toLocaleString('es-CO')}\n\nFiltros Aplicados:\n- Término de Búsqueda: ${filters.searchTerm || 'Ninguno'}\n- Estado: ${filters.status}\n- Tipo: ${filters.type}\n- Usuario: ${filters.user === 'all' ? 'Todos' : MOCK_USERS.find(u => u.id === filters.user)?.name || 'N/A'}\n- Fecha Desde: ${filters.startDate || 'N/A'}\n- Fecha Hasta: ${filters.endDate || 'N/A'}\n\nTotal de Anotaciones: ${filteredEntries.length}\n\n========================================\n\n`;
+    // Fix: Replaced `user.name` with `user.fullName`.
+    const header = `Extracto de Bitácora Digital de Obra\nProyecto: ${project.name}\nContrato: ${project.contractId}\nFecha de Exportación: ${new Date().toLocaleString('es-CO')}\n\nFiltros Aplicados:\n- Término de Búsqueda: ${filters.searchTerm || 'Ninguno'}\n- Estado: ${filters.status}\n- Tipo: ${filters.type}\n- Usuario: ${filters.user === 'all' ? 'Todos' : MOCK_USERS.find(u => u.id === filters.user)?.fullName || 'N/A'}\n- Fecha Desde: ${filters.startDate || 'N/A'}\n- Fecha Hasta: ${filters.endDate || 'N/A'}\n\nTotal de Anotaciones: ${filteredEntries.length}\n\n========================================\n\n`;
 
     const content = filteredEntries.map(entry => {
-        const comments = entry.comments.map(c => `\t- [${new Date(c.timestamp).toLocaleString('es-CO')}] ${c.user.name}: ${c.content}`).join('\n');
+        // Fix: Replaced `user.name` with `user.fullName`.
+        const comments = entry.comments.map(c => `\t- [${new Date(c.timestamp).toLocaleString('es-CO')}] ${c.user.fullName}: ${c.content}`).join('\n');
         const attachments = entry.attachments.map(a => `\t- ${a.fileName} (${(a.size / 1024).toFixed(2)} KB)`).join('\n');
 
         return `
@@ -127,7 +130,8 @@ Folio: #${entry.folioNumber}
 Título: ${entry.title}
 Estado: ${entry.status}
 Tipo: ${entry.type}
-Autor: ${entry.author.name}
+{/* Fix: Replaced `author.name` with `author.fullName`. */}
+Autor: ${entry.author.fullName}
 Fecha de Creación: ${new Date(entry.createdAt).toLocaleString('es-CO')}
 Fecha de Actividad: ${new Date(entry.activityStartDate).toLocaleDateString('es-CO')} a ${new Date(entry.activityEndDate).toLocaleDateString('es-CO')}
 Asunto: ${entry.subject}

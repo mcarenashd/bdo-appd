@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Report } from '../types';
 import Card from './ui/Card';
@@ -31,7 +32,8 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onSelect }) => {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
                 <div className="flex items-center">
                     <UserCircleIcon className="mr-1.5 text-gray-400" />
-                    <span>{report.author.name}</span>
+                    {/* Fix: Replaced `author.name` with `author.fullName`. */}
+                    <span>{report.author.fullName}</span>
                 </div>
                  <div className="flex items-center">
                     <CalendarIcon className="mr-1.5 text-gray-400" />

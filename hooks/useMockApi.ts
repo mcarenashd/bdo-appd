@@ -6,7 +6,7 @@ const API_DELAY = 500; // 500ms delay to simulate network latency
 
 const sendAssignmentEmail = async (user: User, entry: LogEntry) => {
     if (!user.email) {
-        console.warn(`El usuario ${user.name} no tiene un email configurado para recibir notificaciones.`);
+        console.warn(`El usuario ${user.fullName} no tiene un email configurado para recibir notificaciones.`);
         return;
     }
     console.log(`SIMULACIÓN: Enviando email de asignación a ${user.email} para el folio #${entry.folioNumber}`);
@@ -18,7 +18,7 @@ const sendAssignmentEmail = async (user: User, entry: LogEntry) => {
 const sendCommitmentReminderEmail = async (commitment: Commitment, acta: Acta) => {
     const user = commitment.responsible;
     if (!user.email) {
-        console.warn(`El usuario ${user.name} no tiene un email configurado para recibir recordatorios.`);
+        console.warn(`El usuario ${user.fullName} no tiene un email configurado para recibir recordatorios.`);
         return;
     }
      console.log(`SIMULACIÓN: Enviando email de recordatorio de compromiso a ${user.email}`);
@@ -83,10 +83,15 @@ export const useMockApi = () => {
                 resolve({ error: 'Correo o contraseña inválidos.' });
                 return;
             }
+            
+            if (user.status === 'inactive') {
+                resolve({ error: 'Esta cuenta de usuario ha sido desactivada.' });
+                return;
+            }
 
             // In a real app, the backend would generate a secure JWT.
             // Here, we simulate it with a simple base64 encoded string.
-            const fakeToken = btoa(JSON.stringify({ userId: user.id, role: user.role, timestamp: Date.now() }));
+            const fakeToken = btoa(JSON.stringify({ userId: user.id, role: user.appRole, timestamp: Date.now() }));
             
             const { password: _, ...userWithoutPassword } = user;
 
@@ -227,7 +232,7 @@ export const useMockApi = () => {
                             timestamp: new Date().toISOString(),
                             fieldName: 'Asignado Añadido',
                             oldValue: '',
-                            newValue: user.name,
+                            newValue: user.fullName,
                         });
                     }
                 });
@@ -240,7 +245,7 @@ export const useMockApi = () => {
                             user: currentUser,
                             timestamp: new Date().toISOString(),
                             fieldName: 'Asignado Eliminado',
-                            oldValue: user.name,
+                            oldValue: user.fullName,
                             newValue: '',
                         });
                     }

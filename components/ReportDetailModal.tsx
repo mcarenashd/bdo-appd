@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Report, ReportStatus, User } from '../types';
 import Modal from './ui/Modal';
@@ -69,7 +70,8 @@ const ReportDetailModal: React.FC<ReportDetailModalProps> = ({ isOpen, onClose, 
             
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
                 <DetailRow label="Fecha de Presentación" value={new Date(report.submissionDate).toLocaleDateString('es-CO', {dateStyle: 'long'})} />
-                <DetailRow label="Autor del Informe" value={report.author.name} />
+                {/* Fix: Replaced `report.author.name` with `report.author.fullName`. */}
+                <DetailRow label="Autor del Informe" value={report.author.fullName} />
             </dl>
             
             <div>

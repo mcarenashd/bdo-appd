@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { LogEntry, EntryStatus, EntryType, User, UserRole } from '../types';
 import Modal from './ui/Modal';
@@ -163,7 +164,8 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
     return localISOTime.substring(0, 16);
   };
 
-  const canEdit = currentUser.id === entry.author.id || currentUser.role === UserRole.ADMIN;
+  // Fix: Replaced `currentUser.role` with `currentUser.projectRole`.
+  const canEdit = currentUser.id === entry.author.id || currentUser.projectRole === UserRole.ADMIN;
   
   return (
     <>
@@ -198,7 +200,8 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6">
-                <DetailRow label="Autor" value={author.name} />
+                {/* Fix: Replaced `author.name` with `author.fullName`. */}
+                <DetailRow label="Autor" value={author.fullName} />
                 {isEditing ? (
                     <Input label="Fecha de Creación" name="createdAt" type="datetime-local" value={toDatetimeLocal(createdAt)} onChange={handleInputChange} />
                 ) : (
@@ -255,10 +258,13 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                                         </div>
                                         <div className="ml-3 text-sm flex items-center">
                                             <label htmlFor={`user-${user.id}`} className="font-medium text-gray-700 flex items-center cursor-pointer">
-                                                <img src={user.avatarUrl} alt={user.name} className="h-6 w-6 rounded-full mr-2" />
-                                                {user.name}
+                                                {/* Fix: Replaced `user.name` with `user.fullName`. */}
+                                                <img src={user.avatarUrl} alt={user.fullName} className="h-6 w-6 rounded-full mr-2" />
+                                                {/* Fix: Replaced `user.name` with `user.fullName`. */}
+                                                {user.fullName}
                                             </label>
-                                            <span className="ml-2 text-gray-500">({user.role})</span>
+                                            {/* Fix: Replaced `user.role` with `user.projectRole`. */}
+                                            <span className="ml-2 text-gray-500">({user.projectRole})</span>
                                         </div>
                                     </div>
                                 ))}
@@ -270,8 +276,10 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                         {assignees.length > 0 ? (
                             assignees.map(assignee => (
                                 <div key={assignee.id} className="flex items-center space-x-2 bg-gray-100 rounded-full pr-3 py-1 text-sm">
-                                    <img src={assignee.avatarUrl} alt={assignee.name} className="h-7 w-7 rounded-full object-cover"/>
-                                    <span className="font-semibold text-gray-900">{assignee.name}</span>
+                                    {/* Fix: Replaced `assignee.name` with `assignee.fullName`. */}
+                                    <img src={assignee.avatarUrl} alt={assignee.fullName} className="h-7 w-7 rounded-full object-cover"/>
+                                    {/* Fix: Replaced `assignee.name` with `assignee.fullName`. */}
+                                    <span className="font-semibold text-gray-900">{assignee.fullName}</span>
                                 </div>
                             ))
                         ) : (
@@ -359,10 +367,12 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                     <div className="mt-2 space-y-4 max-h-40 overflow-y-auto pr-2">
                         {comments.map(comment => (
                             <div key={comment.id} className="flex items-start space-x-3">
-                                <img src={comment.user.avatarUrl} alt={comment.user.name} className="h-8 w-8 rounded-full object-cover"/>
+                                {/* Fix: Replaced `comment.user.name` with `comment.user.fullName`. */}
+                                <img src={comment.user.avatarUrl} alt={comment.user.fullName} className="h-8 w-8 rounded-full object-cover"/>
                                 <div className="flex-1">
                                     <div className="text-sm">
-                                        <span className="font-semibold text-gray-900">{comment.user.name}</span>
+                                        {/* Fix: Replaced `comment.user.name` with `comment.user.fullName`. */}
+                                        <span className="font-semibold text-gray-900">{comment.user.fullName}</span>
                                         <span className="text-gray-500 ml-2 text-xs">{new Date(comment.timestamp).toLocaleString('es-CO')}</span>
                                     </div>
                                     <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-md">{comment.content}</p>
@@ -377,7 +387,8 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
 
             <div className="pt-4 border-t">
               <form onSubmit={handleCommentSubmit} className="flex items-start space-x-3">
-                <img src={currentUser.avatarUrl} alt={currentUser.name} className="h-8 w-8 rounded-full object-cover"/>
+                {/* Fix: Replaced `currentUser.name` with `currentUser.fullName`. */}
+                <img src={currentUser.avatarUrl} alt={currentUser.fullName} className="h-8 w-8 rounded-full object-cover"/>
                 <div className="flex-1">
                   <textarea
                     rows={2}

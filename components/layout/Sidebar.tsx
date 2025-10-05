@@ -10,7 +10,8 @@ import {
     DocumentArrowDownIcon,
     ListBulletIcon,
     XMarkIcon,
-    ChartPieIcon
+    ChartPieIcon,
+    ShieldCheckIcon
 } from '../icons/Icon';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserRole } from '../../types';
@@ -37,6 +38,7 @@ const navItems = [
     { id: 'weekly_reports_interventoria', label: 'Informes Semanales (Interv.)', icon: <DocumentChartBarIcon />, section: 'Reportes', roles: [UserRole.SUPERVISOR, UserRole.ADMIN] },
     { id: 'monthly_reports_interventoria', label: 'Informes Mensuales (Interv.)', icon: <DocumentChartBarIcon />, section: 'Reportes', roles: [UserRole.SUPERVISOR, UserRole.ADMIN] },
     { id: 'export_project', label: 'Exportar Expediente', icon: <DocumentArrowDownIcon />, section: 'Herramientas' },
+    { id: 'admin', label: 'Administración', icon: <ShieldCheckIcon />, section: 'Herramientas', appRoles: ['admin'] },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen, currentView, setCurrentView }) => {
@@ -51,7 +53,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen, curr
   
   const visibleNavItems = React.useMemo(() => {
     if (!user) return [];
-    return navItems.filter(item => !item.roles || item.roles.includes(user.role));
+    return navItems.filter(item => {
+        const projectRoleMatch = !item.roles || item.roles.includes(user.projectRole);
+        const appRoleMatch = !item.appRoles || item.appRoles.includes(user.appRole);
+        return projectRoleMatch && appRoleMatch;
+    });
   }, [user]);
 
   const NavLink: React.FC<{ item: typeof navItems[0] }> = ({ item }) => (

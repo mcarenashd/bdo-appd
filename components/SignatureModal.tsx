@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import Modal from './ui/Modal';
@@ -45,7 +46,8 @@ const SignatureModal: React.FC<SignatureModalProps> = ({ isOpen, onClose, onConf
     <Modal isOpen={isOpen} onClose={onClose} title="Confirmación de Firma Electrónica" size="md">
       <div className="space-y-4">
         <p className="text-sm text-gray-600">
-          Yo, <strong className="font-semibold text-gray-800">{userToSign.name}</strong>, confirmo que he revisado este documento y estoy de acuerdo con su contenido. Entiendo que esta acción es legalmente vinculante y equivale a mi firma manuscrita.
+          {/* Fix: Replaced `userToSign.name` with `userToSign.fullName`. */}
+          Yo, <strong className="font-semibold text-gray-800">{userToSign.fullName}</strong>, confirmo que he revisado este documento y estoy de acuerdo con su contenido. Entiendo que esta acción es legalmente vinculante y equivale a mi firma manuscrita.
         </p>
 
         <Input

@@ -17,7 +17,8 @@ import PendingTasksDashboard from './components/PendingTasksDashboard';
 import ExportDashboard from './components/ExportDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginScreen from './components/auth/LoginScreen';
-import { ReportScope, Notification, CommitmentStatus } from './types';
+import { ReportScope, Notification, CommitmentStatus, User } from './types';
+import AdminDashboard from './components/admin/AdminDashboard';
 
 type InitialItemToOpen = { type: 'acta' | 'logEntry'; id: string };
 
@@ -102,6 +103,14 @@ const MainApp = () => {
         return <div className="text-center p-8">Cargando datos del proyecto...</div>;
     }
 
+    if (currentView === 'admin' && user?.appRole !== 'admin') {
+      // In a real app with routing, this would be a redirect.
+      // Here, we prevent rendering and switch back to a safe view.
+      console.warn("Acceso no autorizado a la vista de administrador.");
+      setCurrentView('summary');
+      return <ProjectSummaryDashboard project={projectDetails} contractModifications={contractModifications} />;
+    }
+
     switch (currentView) {
       case 'summary':
         return <ProjectSummaryDashboard project={projectDetails} contractModifications={contractModifications} />;
@@ -131,6 +140,8 @@ const MainApp = () => {
         return <MonthlyReportsDashboard project={MOCK_PROJECT} api={api} reportScope={ReportScope.INTERVENTORIA} />;
       case 'export_project':
         return <ExportDashboard project={projectDetails} api={api} />;
+      case 'admin':
+        return <AdminDashboard />;
       default:
         return <ProjectSummaryDashboard project={projectDetails} contractModifications={contractModifications} />;
     }

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 // Fix: Corrected import path for types
 import { LogEntry, EntryType, EntryStatus, User } from '../types';
@@ -144,10 +145,13 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
                                 </div>
                                 <div className="ml-3 text-sm flex items-center">
                                     <label htmlFor={`assign-user-${user.id}`} className="font-medium text-gray-700 flex items-center cursor-pointer">
-                                        <img src={user.avatarUrl} alt={user.name} className="h-6 w-6 rounded-full mr-2" />
-                                        {user.name}
+                                        {/* Fix: Replaced `user.name` with `user.fullName`. */}
+                                        <img src={user.avatarUrl} alt={user.fullName} className="h-6 w-6 rounded-full mr-2" />
+                                        {/* Fix: Replaced `user.name` with `user.fullName`. */}
+                                        {user.fullName}
                                     </label>
-                                    <span className="ml-2 text-gray-500">({user.role})</span>
+                                    {/* Fix: Replaced `user.role` with `user.projectRole`. */}
+                                    <span className="ml-2 text-gray-500">({user.projectRole})</span>
                                 </div>
                             </div>
                         ))}

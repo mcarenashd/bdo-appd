@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ControlPoint } from '../types';
 import Modal from './ui/Modal';
@@ -82,7 +83,8 @@ const ProgressViewerModal: React.FC<ProgressViewerModalProps> = ({ isOpen, onClo
                 </div>
                  <div className="flex items-center text-xs text-gray-500 mt-1">
                     <UserCircleIcon className="w-4 h-4 mr-2" />
-                    Tomada por: {currentPhoto.author.name}
+                    {/* Fix: Replaced `author.name` with `author.fullName`. */}
+                    Tomada por: {currentPhoto.author.fullName}
                 </div>
             </div>
              <div className="text-sm font-semibold text-gray-600">

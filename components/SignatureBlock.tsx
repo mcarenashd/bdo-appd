@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { User, Signature } from '../types';
 import Button from './ui/Button';
@@ -28,10 +29,13 @@ const SignatureBlock: React.FC<SignatureBlockProps> = ({ requiredSignatories, si
           return (
             <div key={user.id} className="flex items-center justify-between">
               <div className="flex items-center">
-                <img src={user.avatarUrl} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
+                {/* Fix: Replaced `user.name` with `user.fullName`. */}
+                <img src={user.avatarUrl} alt={user.fullName} className="h-9 w-9 rounded-full object-cover" />
                 <div className="ml-3">
-                  <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.role}</p>
+                  {/* Fix: Replaced `user.name` with `user.fullName`. */}
+                  <p className="text-sm font-semibold text-gray-900">{user.fullName}</p>
+                  {/* Fix: Replaced `user.role` with `user.projectRole`. */}
+                  <p className="text-xs text-gray-500">{user.projectRole}</p>
                 </div>
               </div>
               {signature ? (

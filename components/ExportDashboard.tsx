@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ProjectDetails, LogEntry, Communication, Acta, Report, Attachment } from '../types';
 import { useMockApi } from '../hooks/useMockApi';
@@ -32,7 +33,8 @@ Folio: #${entry.folioNumber}
 Título: ${entry.title}
 Estado: ${entry.status}
 Tipo: ${entry.type}
-Autor: ${entry.author.name}
+{/* Fix: Replaced `author.name` with `author.fullName`. */}
+Autor: ${entry.author.fullName}
 Fecha de Creación: ${new Date(entry.createdAt).toLocaleString('es-CO')}
 Fecha de Actividad: ${new Date(entry.activityStartDate).toLocaleDateString('es-CO')} a ${new Date(entry.activityEndDate).toLocaleDateString('es-CO')}
 Asunto: ${entry.subject}
@@ -47,7 +49,8 @@ ${entry.description}
 --------------------------------------------------
 COMENTARIOS (${entry.comments.length})
 --------------------------------------------------
-${entry.comments.map(c => `[${new Date(c.timestamp).toLocaleString('es-CO')}] ${c.user.name}: ${c.content}`).join('\n') || 'Sin comentarios.'}
+{/* Fix: Replaced `user.name` with `user.fullName`. */}
+${entry.comments.map(c => `[${new Date(c.timestamp).toLocaleString('es-CO')}] ${c.user.fullName}: ${c.content}`).join('\n') || 'Sin comentarios.'}
 
 --------------------------------------------------
 ADJUNTOS (${entry.attachments.length})
@@ -78,7 +81,8 @@ COMPROMISOS (${acta.commitments.length})
 --------------------------------------------------
 ${acta.commitments.map(c => 
 `* [${c.status}] ${c.description}
-  - Responsable: ${c.responsible.name}
+  {/* Fix: Replaced `responsible.name` with `responsible.fullName`. */}
+  - Responsable: ${c.responsible.fullName}
   - Vence: ${new Date(c.dueDate).toLocaleDateString('es-CO')}
 `).join('\n\n') || 'Sin compromisos.'}
 

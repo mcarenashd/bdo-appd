@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CostActa, CostActaStatus, Observation } from '../types';
 import Modal from './ui/Modal';
@@ -96,10 +97,12 @@ const CostActaDetailModal: React.FC<CostActaDetailModalProps> = ({ isOpen, onClo
                     <div className="mt-2 space-y-4">
                         {acta.observations.map(obs => (
                             <div key={obs.id} className="flex items-start space-x-3 bg-yellow-50 p-3 rounded-md border border-yellow-200">
-                                <img src={obs.author.avatarUrl} alt={obs.author.name} className="h-8 w-8 rounded-full object-cover"/>
+                                {/* Fix: Replaced `obs.author.name` with `obs.author.fullName`. */}
+                                <img src={obs.author.avatarUrl} alt={obs.author.fullName} className="h-8 w-8 rounded-full object-cover"/>
                                 <div className="flex-1">
                                     <div className="text-sm">
-                                        <span className="font-semibold text-gray-900">{obs.author.name}</span>
+                                        {/* Fix: Replaced `obs.author.name` with `obs.author.fullName`. */}
+                                        <span className="font-semibold text-gray-900">{obs.author.fullName}</span>
                                         <span className="text-gray-500 ml-2 text-xs">{new Date(obs.timestamp).toLocaleString('es-CO')}</span>
                                     </div>
                                     <p className="text-sm text-gray-700">{obs.text}</p>

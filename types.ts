@@ -1,3 +1,40 @@
+// New types for Admin View
+export type AppRole = "admin" | "editor" | "viewer";
+
+export interface Permission {
+  canManageUsers: boolean;
+  canEditProjects: boolean;
+  canViewFinancials: boolean;
+  canConfigureApp: boolean;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string; // ISO
+  actorEmail: string;
+  action:
+    | "USER_INVITED"
+    | "USER_UPDATED"
+    | "ROLE_CHANGED"
+    | "APP_SETTING_CHANGED";
+  entityType: "user" | "project" | "setting";
+  entityId?: string;
+  diff?: Record<string, { from: any; to: any }>;
+}
+
+export interface AppSettings {
+  companyName: string;
+  timezone: string;       // e.g. "Europe/Madrid"
+  locale: "es-ES" | "en-US";
+  requireStrongPassword: boolean;
+  enable2FA: boolean;
+  sessionTimeoutMinutes: number;
+  photoIntervalDays: number; // e.g. 3
+  defaultProjectVisibility: "private" | "organization";
+}
+
+
+// Updated/Existing types
 export enum UserRole {
   RESIDENT = 'Residente de Obra',
   SUPERVISOR = 'Supervisor',
@@ -7,11 +44,16 @@ export enum UserRole {
 
 export interface User {
   id: string;
-  name: string;
-  role: UserRole;
+  fullName: string;
+  email: string;
+  projectRole: UserRole;
   avatarUrl: string;
-  email?: string;
-  password?: string; // NOTE: In a real app, this would be a hash stored in the backend.
+  password?: string;
+  // Admin fields
+  appRole: AppRole;
+  permissions?: Partial<Permission>;
+  status: "active" | "inactive";
+  lastLoginAt?: string; // ISO
 }
 
 export interface Project {

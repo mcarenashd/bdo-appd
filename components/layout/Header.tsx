@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ChevronDownIcon, BellIcon, Bars3Icon, ChevronUpIcon } from '../icons/Icon';
@@ -92,10 +91,10 @@ const Header: React.FC<HeaderProps> = ({ setIsSidebarOpen, notifications, setNot
             onClick={() => setIsDropdownOpen(prev => !prev)} 
             className="flex items-center space-x-2 focus:outline-none p-1 rounded-md hover:bg-gray-100"
           >
-            <img className="h-9 w-9 rounded-full object-cover" src={user.avatarUrl} alt={user.name} />
+            <img className="h-9 w-9 rounded-full object-cover" src={user.avatarUrl} alt={user.fullName} />
             <div className='hidden sm:block text-left'>
-                <div className="font-semibold text-sm text-gray-700">{user.name}</div>
-                <div className="text-xs text-gray-500">{user.role}</div>
+                <div className="font-semibold text-sm text-gray-700">{user.fullName}</div>
+                <div className="text-xs text-gray-500">{user.projectRole}</div>
             </div>
             {isDropdownOpen 
               ? <ChevronUpIcon className="h-5 w-5 text-gray-400 hidden sm:block"/> 

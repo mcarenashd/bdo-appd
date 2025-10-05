@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Acta, Commitment, CommitmentStatus, User } from '../types';
 import Modal from './ui/Modal';
@@ -64,7 +65,8 @@ const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta
 
   const handleSendReminderClick = (commitment: Commitment) => {
     onSendReminder(commitment, acta);
-    alert(`Recordatorio enviado a ${commitment.responsible.name} (${commitment.responsible.email})`);
+    // Fix: Replaced `commitment.responsible.name` with `commitment.responsible.fullName`.
+    alert(`Recordatorio enviado a ${commitment.responsible.fullName} (${commitment.responsible.email})`);
   };
   
   const handleConfirmSignature = async (password: string): Promise<{ success: boolean, error?: string }> => {
@@ -131,8 +133,10 @@ const ActaDetailModal: React.FC<ActaDetailModalProps> = ({ isOpen, onClose, acta
                                             {commitment.description}
                                         </p>
                                         <div className="flex items-center text-xs text-gray-500 mt-1.5">
-                                            <img src={commitment.responsible.avatarUrl} alt={commitment.responsible.name} className="h-5 w-5 rounded-full mr-2"/>
-                                            <span>Responsable: {commitment.responsible.name}</span>
+                                            {/* Fix: Replaced `commitment.responsible.name` with `commitment.responsible.fullName`. */}
+                                            <img src={commitment.responsible.avatarUrl} alt={commitment.responsible.fullName} className="h-5 w-5 rounded-full mr-2"/>
+                                            {/* Fix: Replaced `commitment.responsible.name` with `commitment.responsible.fullName`. */}
+                                            <span>Responsable: {commitment.responsible.fullName}</span>
                                         </div>
                                     </label>
                                 </div>

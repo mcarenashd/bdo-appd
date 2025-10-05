@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Acta, ActaStatus, Commitment, CommitmentStatus, User, Attachment, ActaArea } from '../types';
 import { MOCK_USERS } from '../services/mockData';
@@ -148,7 +149,8 @@ const ActaFormModal: React.FC<ActaFormModalProps> = ({ isOpen, onClose, onSave }
                         />
                         <div className="grid grid-cols-2 gap-4 mt-2">
                            <Select label="Responsable" id={`resp-${index}`} value={commitment.responsible.id} onChange={(e) => handleResponsibleChange(index, e.target.value)}>
-                                {MOCK_USERS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                {/* Fix: Replaced `u.name` with `u.fullName`. */}
+                                {MOCK_USERS.map(u => <option key={u.id} value={u.id}>{u.fullName}</option>)}
                            </Select>
                            <Input label="Fecha Límite" id={`due-${index}`} type="date" value={commitment.dueDate} onChange={(e) => handleCommitmentChange(index, 'dueDate', e.target.value)} />
                         </div>

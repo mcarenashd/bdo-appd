@@ -52,7 +52,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onSelect }) => {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
                 <div className="flex items-center">
                     <UserCircleIcon className="mr-1.5 text-gray-400" />
-                    <span>{entry.author.name}</span>
+                    <span>{entry.author.fullName}</span>
                 </div>
                  <div className="flex items-center">
                     <CalendarIcon className="mr-1.5 text-gray-400" />
@@ -74,14 +74,14 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, onSelect }) => {
                 )}
             </div>
             {entry.assignees && entry.assignees.length > 0 && (
-                <div className="flex-shrink-0" title={`Asignado a: ${entry.assignees.map(a => a.name).join(', ')}`}>
+                <div className="flex-shrink-0" title={`Asignado a: ${entry.assignees.map(a => a.fullName).join(', ')}`}>
                     <div className="flex -space-x-2 overflow-hidden">
                         {entry.assignees.slice(0,3).map(assignee => (
                             <img
                                 key={assignee.id}
                                 className="inline-block h-7 w-7 rounded-full ring-2 ring-white"
                                 src={assignee.avatarUrl}
-                                alt={assignee.name}
+                                alt={assignee.fullName}
                             />
                         ))}
                     </div>

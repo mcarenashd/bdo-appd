@@ -1,10 +1,11 @@
-import { User, UserRole, Project, LogEntry, EntryStatus, EntryType, Comment, Attachment, Communication, CommunicationStatus, StatusChange, Acta, ActaStatus, Commitment, CommitmentStatus, ActaArea, CostActa, CostActaStatus, Observation, ContractItem, WorkActa, WorkActaStatus, WorkActaItem, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, KeyPersonnel, Report, ReportStatus, ModificationType, ReportScope, DeliveryMethod } from '../types';
+import { User, UserRole, Project, LogEntry, EntryStatus, EntryType, Comment, Attachment, Communication, CommunicationStatus, StatusChange, Acta, ActaStatus, Commitment, CommitmentStatus, ActaArea, CostActa, CostActaStatus, Observation, ContractItem, WorkActa, WorkActaStatus, WorkActaItem, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, KeyPersonnel, Report, ReportStatus, ModificationType, ReportScope, DeliveryMethod, AppSettings, AuditLogEntry, AppRole } from '../types';
 
 export const MOCK_USERS: User[] = [
-  { id: 'user-1', name: 'Ana García (Residente)', role: UserRole.RESIDENT, avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg', email: 'ana.garcia@constructora.com', password: 'password123' },
-  { id: 'user-2', name: 'Carlos Rodriguez (Supervisor)', role: UserRole.SUPERVISOR, avatarUrl: 'https://randomuser.me/api/portraits/men/68.jpg', email: 'carlos.rodriguez@supervision.com', password: 'password123' },
-  { id: 'user-3', name: 'Laura Martinez (Contratista)', role: UserRole.CONTRACTOR_REP, avatarUrl: 'https://randomuser.me/api/portraits/women/69.jpg', email: 'laura.martinez@constructora.com', password: 'password123' },
-  { id: 'user-4', name: 'Jorge Hernandez (Admin)', role: UserRole.ADMIN, avatarUrl: 'https://randomuser.me/api/portraits/men/69.jpg', email: 'jorge.hernandez@idu.gov.co', password: 'password123' },
+  { id: 'user-1', fullName: 'Ana García (Residente)', projectRole: UserRole.RESIDENT, appRole: 'editor', avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg', email: 'ana.garcia@constructora.com', password: 'password123', status: 'active', lastLoginAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString() },
+  { id: 'user-2', fullName: 'Carlos Rodriguez (Supervisor)', projectRole: UserRole.SUPERVISOR, appRole: 'editor', avatarUrl: 'https://randomuser.me/api/portraits/men/68.jpg', email: 'carlos.rodriguez@supervision.com', password: 'password123', status: 'active', lastLoginAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString() },
+  { id: 'user-3', fullName: 'Laura Martinez (Contratista)', projectRole: UserRole.CONTRACTOR_REP, appRole: 'viewer', avatarUrl: 'https://randomuser.me/api/portraits/women/69.jpg', email: 'laura.martinez@constructora.com', password: 'password123', status: 'active', lastLoginAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString() },
+  { id: 'user-4', fullName: 'Jorge Hernandez (Admin)', projectRole: UserRole.ADMIN, appRole: 'admin', avatarUrl: 'https://randomuser.me/api/portraits/men/69.jpg', email: 'jorge.hernandez@idu.gov.co', password: 'password123', status: 'active', lastLoginAt: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
+  { id: 'user-5', fullName: 'Victor Viewer', projectRole: UserRole.RESIDENT, appRole: 'viewer', avatarUrl: 'https://randomuser.me/api/portraits/men/70.jpg', email: 'victor.viewer@constructora.com', password: 'password123', status: 'inactive', lastLoginAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString() }
 ];
 
 export const MOCK_USER = MOCK_USERS[0]; // Ana García
@@ -14,6 +15,47 @@ export const MOCK_PROJECT: Project = {
   name: 'Ampliación Av. Ciudad de Cali - Tramo 1',
   contractId: 'IDU-LP-SGI-001-2023',
 };
+
+// New Mock Data for Admin Panel
+export const MOCK_APP_SETTINGS: AppSettings = {
+  companyName: "IDU - Bogotá",
+  timezone: "America/Bogota",
+  locale: "es-ES",
+  requireStrongPassword: true,
+  enable2FA: false,
+  sessionTimeoutMinutes: 60,
+  photoIntervalDays: 3,
+  defaultProjectVisibility: "private"
+};
+
+export const MOCK_AUDIT_LOGS: AuditLogEntry[] = [
+    {
+        id: 'log-1',
+        timestamp: new Date(Date.now() - 1 * 3600 * 1000).toISOString(),
+        actorEmail: 'jorge.hernandez@idu.gov.co',
+        action: 'USER_UPDATED',
+        entityType: 'user',
+        entityId: 'user-3',
+        diff: { appRole: { from: 'viewer', to: 'editor' } }
+    },
+    {
+        id: 'log-2',
+        timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+        actorEmail: 'jorge.hernandez@idu.gov.co',
+        action: 'APP_SETTING_CHANGED',
+        entityType: 'setting',
+        diff: { sessionTimeoutMinutes: { from: 30, to: 60 } }
+    },
+    {
+        id: 'log-3',
+        timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+        actorEmail: 'jorge.hernandez@idu.gov.co',
+        action: 'USER_INVITED',
+        entityType: 'user',
+        entityId: 'user-5'
+    }
+];
+
 
 // New Mock Data for Project Details
 const MOCK_KEY_PERSONNEL: KeyPersonnel[] = [

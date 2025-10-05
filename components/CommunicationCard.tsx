@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 // Fix: Corrected import path for types
 import { Communication, CommunicationStatus } from '../types';
@@ -92,7 +93,8 @@ const CommunicationCard: React.FC<CommunicationCardProps> = ({ communication, al
         <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
             <div className="flex items-center">
                 <UserCircleIcon className="mr-1.5 text-gray-400" />
-                <span>Registrado por: {communication.uploader.name}</span>
+                {/* Fix: Replaced `uploader.name` with `uploader.fullName`. */}
+                <span>Registrado por: {communication.uploader.fullName}</span>
             </div>
              <div className="flex items-center">
                 <CalendarIcon className="mr-1.5 text-gray-400" />

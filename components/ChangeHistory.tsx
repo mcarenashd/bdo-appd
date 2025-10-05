@@ -49,10 +49,10 @@ const ChangeHistory: React.FC<ChangeHistoryProps> = ({ history }) => {
       <div className="mt-2 space-y-4 max-h-48 overflow-y-auto border p-3 rounded-lg bg-gray-50/70">
         {history.slice().reverse().map(change => (
           <div key={change.id} className="flex items-start space-x-3">
-            <img src={change.user.avatarUrl} alt={change.user.name} className="h-8 w-8 rounded-full object-cover"/>
+            <img src={change.user.avatarUrl} alt={change.user.fullName} className="h-8 w-8 rounded-full object-cover"/>
             <div className="flex-1 text-sm">
                 <p className="text-gray-800">
-                    <span className="font-semibold">{change.user.name}</span>
+                    <span className="font-semibold">{change.user.fullName}</span>
                     {change.fieldName.startsWith('Adjunto') ? (
                        <span className="text-gray-500"> gestionó un archivo adjunto.</span>
                     ) : change.fieldName.startsWith('Asignado') ? (

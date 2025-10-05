@@ -67,8 +67,8 @@ const LoginScreen: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
                 {MOCK_USERS.map(user => (
                     <button key={user.id} onClick={() => handleQuickLogin(user.email!)} className="text-xs text-left p-2 bg-white border rounded hover:bg-gray-100">
-                        <p className="font-bold truncate">{user.name.split('(')[0]}</p>
-                        <p className="text-gray-600">{user.role}</p>
+                        <p className="font-bold truncate">{user.fullName.split('(')[0]}</p>
+                        <p className="text-gray-600">{user.projectRole}</p>
                     </button>
                 ))}
             </div>
