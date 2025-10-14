@@ -83,6 +83,10 @@ export interface ProjectDetails {
   startDate: string; // ISO date string
   initialEndDate: string; // ISO date string
   keyPersonnel: KeyPersonnel[];
+  // New fields for Interventoria
+  interventoriaContractId: string;
+  interventoriaInitialValue: number;
+  technicalSupervisorName: string;
 }
 
 
@@ -442,4 +446,76 @@ export interface Notification {
   relatedItemId: string;
   createdAt: string;
   isRead: boolean;
+}
+
+// WEEKLY REPORT (Informe Semanal de Interventoria)
+export interface AvanceContrato {
+  trabajoProgramadoSemanal: number;
+  valorProgramadoSemanal: number;
+  trabajoEjecutadoSemanal: number;
+  valorEjecutadoSemanal: number;
+  trabajoProgramadoAcumulado: number;
+  valorProgramadoAcumulado: number;
+  trabajoEjecutadoAcumulado: number;
+  valorEjecutadoAcumulado: number;
+}
+
+export interface EmpleoPersonal {
+  adminContratista: number;
+  operativoDiurnoContratista: number;
+  operativoNocturnoContratista: number;
+  adminInterventoria: number;
+  operativoDiurnoInterventoria: number;
+  operativoNocturnoInterventoria: number;
+}
+
+export interface FrenteResumen {
+  id: string;
+  nombre: string;
+  programado: number;
+  ejecutado: number;
+  variacion: number;
+  actividades: string;
+}
+
+export interface MetasFisicas {
+  id: string;
+  descripcion: string;
+  unidad: string;
+  totalProyecto: number;
+  progSemanal: number;
+  progAcumulado: number;
+  ejecSemanal: number;
+  ejecAcumulado: number;
+}
+
+
+export interface WeeklyReport {
+  id: string;
+  semana: number;
+  del: string; // ISO date
+  al: string; // ISO date
+  
+  empleos: EmpleoPersonal;
+  
+  avanceTotalContrato: AvanceContrato;
+  avancePreliminar: AvanceContrato;
+  avanceConstruccion: AvanceContrato;
+
+  resumenCronograma: FrenteResumen[];
+
+  resumenGeneral: string;
+  resumenRiesgos: string;
+  resumenBIM: string;
+
+  metasFisicas: MetasFisicas[];
+
+  componenteTecnico: string; // Could be more structured later
+  correspondencia: string;
+  componenteSST: string;
+  componenteAmbiental: string;
+  componenteSocial: string;
+
+  // Link to photos, not storing blobs
+  registroFotograficoIds: string[]; 
 }

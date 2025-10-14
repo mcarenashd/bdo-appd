@@ -131,7 +131,7 @@ Folio: #${entry.folioNumber}
 Título: ${entry.title}
 Estado: ${entry.status}
 Tipo: ${entry.type}
-// Fix: Removed invalid JSX comments inside template literal and corrected reference to entry.author.fullName to fix "Cannot find name 'author'" error.
+// Fix: Removed invalid developer comment from inside template literal.
 Autor: ${entry.author.fullName}
 Fecha de Creación: ${new Date(entry.createdAt).toLocaleString('es-CO')}
 Fecha de Actividad: ${new Date(entry.activityStartDate).toLocaleDateString('es-CO')} a ${new Date(entry.activityEndDate).toLocaleDateString('es-CO')}

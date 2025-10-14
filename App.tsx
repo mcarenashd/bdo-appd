@@ -133,10 +133,8 @@ const MainApp = () => {
         return <MinutesDashboard project={MOCK_PROJECT} api={api} initialItemToOpen={initialItemToOpen} clearInitialItem={clearInitialItem} />;
       case 'costs':
         return <CostDashboard project={MOCK_PROJECT} api={api} />;
-      case 'weekly_reports_obra':
-        return <WeeklyReportsDashboard project={MOCK_PROJECT} api={api} reportScope={ReportScope.OBRA} />;
-      case 'weekly_reports_interventoria':
-        return <WeeklyReportsDashboard project={MOCK_PROJECT} api={api} reportScope={ReportScope.INTERVENTORIA} />;
+      case 'weekly_reports':
+        return <WeeklyReportsDashboard project={projectDetails} api={api} />;
       case 'monthly_reports_obra':
         return <MonthlyReportsDashboard project={MOCK_PROJECT} api={api} reportScope={ReportScope.OBRA} />;
       case 'monthly_reports_interventoria':

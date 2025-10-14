@@ -1,4 +1,4 @@
-import { User, UserRole, Project, LogEntry, EntryStatus, EntryType, Comment, Attachment, Communication, CommunicationStatus, StatusChange, Acta, ActaStatus, Commitment, CommitmentStatus, ActaArea, CostActa, CostActaStatus, Observation, ContractItem, WorkActa, WorkActaStatus, WorkActaItem, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, KeyPersonnel, Report, ReportStatus, ModificationType, ReportScope, DeliveryMethod, AppSettings, AuditLogEntry, AppRole, Drawing, DrawingDiscipline, DrawingStatus } from '../types';
+import { User, UserRole, Project, LogEntry, EntryStatus, EntryType, Comment, Attachment, Communication, CommunicationStatus, StatusChange, Acta, ActaStatus, Commitment, CommitmentStatus, ActaArea, CostActa, CostActaStatus, Observation, ContractItem, WorkActa, WorkActaStatus, WorkActaItem, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, KeyPersonnel, Report, ReportStatus, ModificationType, ReportScope, DeliveryMethod, AppSettings, AuditLogEntry, AppRole, Drawing, DrawingDiscipline, DrawingStatus, WeeklyReport } from '../types';
 
 export const MOCK_USERS: User[] = [
   { id: 'user-1', fullName: 'Ana García (Residente)', projectRole: UserRole.RESIDENT, appRole: 'editor', avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg', email: 'ana.garcia@constructora.com', password: 'password123', status: 'active', lastLoginAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString() },
@@ -124,12 +124,16 @@ const MOCK_KEY_PERSONNEL: KeyPersonnel[] = [
 export const MOCK_PROJECT_DETAILS: ProjectDetails = {
     ...MOCK_PROJECT,
     object: 'Construcción y adecuación de la segunda calzada de la Avenida Ciudad de Cali, desde la Avenida Circunvalar del Sur hasta la Avenida San Marteen, incluyendo la construcción del puente vehicular sobre el Canal San Francisco y obras de urbanismo y espacio público.',
-    contractorName: 'Consorcio Vial de Cali 2023',
-    supervisorName: 'Supervisión IDU 2023 SAS',
-    initialValue: 6316535314, // Same as MOCK_MAIN_CONTRACT_VALUE
-    startDate: '2024-03-01',
-    initialEndDate: '2025-08-31',
+    contractorName: 'CONSORCIO CELESTINO MUTIS IJK',
+    supervisorName: 'CONSORCIO DQ',
+    initialValue: 13331560035,
+    startDate: '2025-01-31',
+    initialEndDate: '2025-11-30',
     keyPersonnel: MOCK_KEY_PERSONNEL,
+    // New fields
+    interventoriaContractId: '2428 DE 2024',
+    interventoriaInitialValue: 2666312007,
+    technicalSupervisorName: 'CARLOS ALBERTO LEURO BERNAL'
 };
 
 
@@ -620,3 +624,6 @@ export const MOCK_REPORTS: Report[] = [
         signatures: [],
     },
 ];
+
+
+export const MOCK_WEEKLY_REPORTS: WeeklyReport[] = [];

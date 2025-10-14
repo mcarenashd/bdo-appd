@@ -1,73 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { Project, Report, ReportScope } from '../types';
+import React, { useState } from 'react';
+import { ProjectDetails, WeeklyReport } from '../types';
 import { useMockApi } from '../hooks/useMockApi';
 import Button from './ui/Button';
-import { PlusIcon, ListBulletIcon } from './icons/Icon';
+import { PlusIcon, DocumentChartBarIcon } from './icons/Icon';
 import EmptyState from './ui/EmptyState';
-import ReportCard from './ReportCard';
-import ReportDetailModal from './ReportDetailModal';
-import ReportFormModal from './ReportFormModal';
-import { useAuth } from '../contexts/AuthContext';
+import WeeklyReportGenerator from './reports/WeeklyReportGenerator';
+import Card from './ui/Card';
 
 interface WeeklyReportsDashboardProps {
-  project: Project;
+  project: ProjectDetails;
   api: ReturnType<typeof useMockApi>;
-  reportScope: ReportScope;
 }
 
-const WeeklyReportsDashboard: React.FC<WeeklyReportsDashboardProps> = ({ project, api, reportScope }) => {
-  const { user } = useAuth();
-  const { reports, isLoading, error, addReport, updateReport, addSignature } = api;
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+const WeeklyReportsDashboard: React.FC<WeeklyReportsDashboardProps> = ({ project, api }) => {
+  const { weeklyReports, isLoading, error, addWeeklyReport } = api;
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
 
-  const weeklyReports = useMemo(() => {
-    return reports.filter(r => r.type === 'Weekly' && r.reportScope === reportScope);
-  }, [reports, reportScope]);
-  
-  const title = `Informes Semanales (${reportScope})`;
-
-  const handleOpenDetail = (report: Report) => {
-    setSelectedReport(report);
-    setIsDetailModalOpen(true);
+  const handleSaveReport = async (reportData: Omit<WeeklyReport, 'id'>) => {
+    await addWeeklyReport(reportData);
+    setIsGeneratorOpen(false);
   };
 
-  const handleCloseDetail = () => {
-    setIsDetailModalOpen(false);
-    setSelectedReport(null);
-  };
-
-  const handleOpenForm = () => {
-    setIsFormModalOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormModalOpen(false);
-  };
-
-  const handleSaveReport = async (reportData: Omit<Report, 'id' | 'author' | 'status' | 'attachments'>, files: File[]) => {
-    if (!user) return;
-    await addReport(reportData, files, user);
-    handleCloseForm();
-  };
-  
-  const handleUpdateReport = async (updatedReport: Report) => {
-    await updateReport(updatedReport);
-    setSelectedReport(updatedReport);
+  if (isGeneratorOpen) {
+    return <WeeklyReportGenerator project={project} onSave={handleSaveReport} onCancel={() => setIsGeneratorOpen(false)} />;
   }
-
-  if (!user) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Informes Semanales de Interventoría</h2>
           <p className="text-sm text-gray-500">Proyecto: {project.name}</p>
         </div>
-        <Button onClick={handleOpenForm} leftIcon={<PlusIcon />}>
-          Registrar Informe Semanal
+        <Button onClick={() => setIsGeneratorOpen(true)} leftIcon={<PlusIcon />}>
+          Generar Nuevo Informe Semanal
         </Button>
       </div>
 
@@ -79,42 +45,25 @@ const WeeklyReportsDashboard: React.FC<WeeklyReportsDashboardProps> = ({ project
           {weeklyReports.length > 0 ? (
             <div className="space-y-4">
               {weeklyReports.map(report => (
-                <ReportCard key={report.id} report={report} onSelect={handleOpenDetail} />
+                <Card key={report.id} className="p-4">
+                    <p>Informe Semana #{report.semana}</p>
+                </Card>
               ))}
             </div>
           ) : (
             <EmptyState
-              icon={<ListBulletIcon />}
+              icon={<DocumentChartBarIcon />}
               title="No hay informes semanales"
-              message="Registra el primer informe para llevar un control periódico del avance y las actividades de la obra."
+              message="Genera el primer informe para consolidar el avance, personal, actividades y estado general del proyecto durante la semana."
               actionButton={
-                <Button onClick={handleOpenForm} leftIcon={<PlusIcon />}>
-                  Crear Primer Informe
+                <Button onClick={() => setIsGeneratorOpen(true)} leftIcon={<PlusIcon />}>
+                  Generar Primer Informe
                 </Button>
               }
             />
           )}
         </div>
       )}
-
-      {selectedReport && (
-        <ReportDetailModal
-          isOpen={isDetailModalOpen}
-          onClose={handleCloseDetail}
-          report={selectedReport}
-          onUpdate={handleUpdateReport}
-          onSign={addSignature}
-          currentUser={user}
-        />
-      )}
-
-      <ReportFormModal
-        isOpen={isFormModalOpen}
-        onClose={handleCloseForm}
-        onSave={handleSaveReport}
-        reportType="Weekly"
-        reportScope={reportScope}
-      />
     </div>
   );
 };

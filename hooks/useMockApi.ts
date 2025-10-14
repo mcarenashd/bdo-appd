@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
-import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment, EntryStatus, ActaStatus, Drawing, DrawingDiscipline, DrawingStatus, DrawingVersion } from '../types';
-import { MOCK_LOG_ENTRIES, MOCK_COMMUNICATIONS, MOCK_ACTAS, MOCK_COST_ACTAS, MOCK_USER, MOCK_WORK_ACTAS, MOCK_CONTRACT_ITEMS, MOCK_PROJECT, MOCK_CONTROL_POINTS, MOCK_PROJECT_TASKS, MOCK_CONTRACT_MODIFICATIONS, MOCK_PROJECT_DETAILS, MOCK_REPORTS, MOCK_USERS, MOCK_DRAWINGS } from '../services/mockData';
+import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment, EntryStatus, ActaStatus, Drawing, DrawingDiscipline, DrawingStatus, DrawingVersion, WeeklyReport } from '../types';
+import { MOCK_LOG_ENTRIES, MOCK_COMMUNICATIONS, MOCK_ACTAS, MOCK_COST_ACTAS, MOCK_USER, MOCK_WORK_ACTAS, MOCK_CONTRACT_ITEMS, MOCK_PROJECT, MOCK_CONTROL_POINTS, MOCK_PROJECT_TASKS, MOCK_CONTRACT_MODIFICATIONS, MOCK_PROJECT_DETAILS, MOCK_REPORTS, MOCK_USERS, MOCK_DRAWINGS, MOCK_WEEKLY_REPORTS } from '../services/mockData';
 
 const API_DELAY = 500; // 500ms delay to simulate network latency
 
@@ -45,6 +44,7 @@ export const useMockApi = () => {
   const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [drawings, setDrawings] = useState<Drawing[]>([]);
+  const [weeklyReports, setWeeklyReports] = useState<WeeklyReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +65,7 @@ export const useMockApi = () => {
           setProjectDetails(MOCK_PROJECT_DETAILS);
           setReports(MOCK_REPORTS);
           setDrawings(MOCK_DRAWINGS);
+          setWeeklyReports(MOCK_WEEKLY_REPORTS);
           setError(null);
         } catch (e) {
           setError('Failed to fetch mock data.');
@@ -530,6 +531,19 @@ export const useMockApi = () => {
         }, API_DELAY);
     });
   };
+  
+  const addWeeklyReport = async (reportData: Omit<WeeklyReport, 'id'>): Promise<void> => {
+     return new Promise(resolve => {
+        setTimeout(() => {
+            const newReport: WeeklyReport = {
+                ...reportData,
+                id: `weekly-report-${Date.now()}`
+            };
+            setWeeklyReports(prev => [newReport, ...prev]);
+            resolve();
+        }, API_DELAY);
+     });
+  };
 
   const addSignature = async (documentId: string, documentType: 'logEntry' | 'acta' | 'report', signer: User): Promise<LogEntry | Acta | Report | undefined> => {
       return new Promise((resolve) => {
@@ -685,5 +699,5 @@ export const useMockApi = () => {
     });
   };
 
-  return { login, logEntries, communications, actas, costActas, workActas, contractItems, controlPoints, projectTasks, contractModifications, projectDetails, reports, drawings, isLoading, error, addEntry, updateEntry, addCommentToEntry, addCommunication, addActa, updateCommunicationStatus, updateActa, addCostActa, updateCostActa, setLogEntries, addWorkActa, updateWorkActa, addControlPoint, addPhotoToControlPoint, addContractModification, addReport, updateReport, sendCommitmentReminderEmail, addSignature, addDrawing, addDrawingVersion, addCommentToDrawing };
+  return { login, logEntries, communications, actas, costActas, workActas, contractItems, controlPoints, projectTasks, contractModifications, projectDetails, reports, drawings, weeklyReports, isLoading, error, addEntry, updateEntry, addCommentToEntry, addCommunication, addActa, updateCommunicationStatus, updateActa, addCostActa, updateCostActa, setLogEntries, addWorkActa, updateWorkActa, addControlPoint, addPhotoToControlPoint, addContractModification, addReport, updateReport, addWeeklyReport, sendCommitmentReminderEmail, addSignature, addDrawing, addDrawingVersion, addCommentToDrawing };
 };

@@ -34,7 +34,7 @@ Folio: #${entry.folioNumber}
 Título: ${entry.title}
 Estado: ${entry.status}
 Tipo: ${entry.type}
-// Fix: Removed invalid JSX comments inside template literal and corrected reference to entry.author to fix "Cannot find name 'author'" error.
+// Fix: Removed invalid developer comment from inside template literal.
 Autor: ${entry.author.fullName}
 Fecha de Creación: ${new Date(entry.createdAt).toLocaleString('es-CO')}
 Fecha de Actividad: ${new Date(entry.activityStartDate).toLocaleDateString('es-CO')} a ${new Date(entry.activityEndDate).toLocaleDateString('es-CO')}
@@ -50,7 +50,7 @@ ${entry.description}
 --------------------------------------------------
 COMENTARIOS (${entry.comments.length})
 --------------------------------------------------
-// Fix: Removed invalid JSX comment from template literal to fix "Cannot find name 'user'" error.
+// Fix: Removed invalid developer comment from inside template literal.
 ${entry.comments.map(c => `[${new Date(c.timestamp).toLocaleString('es-CO')}] ${c.user.fullName}: ${c.content}`).join('\n') || 'Sin comentarios.'}
 
 --------------------------------------------------
@@ -80,7 +80,7 @@ ${acta.summary}
 --------------------------------------------------
 COMPROMISOS (${acta.commitments.length})
 --------------------------------------------------
-// Fix: Removed invalid JSX comments from template literal to fix multiple errors including "Cannot find name 'responsible'".
+// Fix: Removed invalid developer comment from inside template literal.
 ${acta.commitments.map(c => 
 `* [${c.status}] ${c.description}
   - Responsable: ${c.responsible.fullName}
