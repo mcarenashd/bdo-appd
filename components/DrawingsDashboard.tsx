@@ -44,6 +44,7 @@ const DrawingsDashboard: React.FC<DrawingsDashboardProps> = ({ project, api }) =
   const handleOpenNewVersionModal = (drawing: Drawing) => {
     setDrawingToUpdate(drawing);
     setIsUploadModalOpen(true);
+    setIsDetailModalOpen(false);
   };
 
   const handleOpenDetailModal = (drawing: Drawing) => {
