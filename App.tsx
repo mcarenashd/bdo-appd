@@ -19,6 +19,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginScreen from './components/auth/LoginScreen';
 import { ReportScope, Notification, CommitmentStatus, User } from './types';
 import AdminDashboard from './components/admin/AdminDashboard';
+import DrawingsDashboard from './components/DrawingsDashboard';
 
 type InitialItemToOpen = { type: 'acta' | 'logEntry'; id: string };
 
@@ -118,6 +119,8 @@ const MainApp = () => {
         return <PendingTasksDashboard api={api} onNavigate={handleNavigateAndOpen} />;
       case 'logbook':
         return <ProjectDashboard project={MOCK_PROJECT} api={api} initialItemToOpen={initialItemToOpen} clearInitialItem={clearInitialItem} />;
+      case 'drawings':
+        return <DrawingsDashboard project={MOCK_PROJECT} api={api} />;
       case 'work_progress':
         return <WorkProgressDashboard project={MOCK_PROJECT} api={api} />;
       case 'photographic_progress':

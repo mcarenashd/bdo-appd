@@ -11,7 +11,8 @@ import {
     ListBulletIcon,
     XMarkIcon,
     ChartPieIcon,
-    ShieldCheckIcon
+    ShieldCheckIcon,
+    MapIcon
 } from '../icons/Icon';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserRole } from '../../types';
@@ -27,6 +28,7 @@ const navItems = [
     { id: 'summary', label: 'Resumen del Proyecto', icon: <Squares2X2Icon />, section: 'General' },
     { id: 'pending_tasks', label: 'Mis Pendientes', icon: <ListBulletIcon />, section: 'General' },
     { id: 'logbook', label: 'Bitácora de Obra', icon: <ClipboardDocumentListIcon />, section: 'Registros' },
+    { id: 'drawings', label: 'Planos de Obra', icon: <MapIcon />, section: 'Registros' },
     { id: 'communications', label: 'Comunicaciones', icon: <ChatBubbleLeftRightIcon />, section: 'Registros' },
     { id: 'minutes', label: 'Actas de Comité', icon: <ClipboardDocumentListIcon />, section: 'Registros' },
     { id: 'work_progress', label: 'Avance de Obra', icon: <ChartPieIcon />, section: 'Seguimiento' },

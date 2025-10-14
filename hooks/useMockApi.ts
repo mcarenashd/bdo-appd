@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment, EntryStatus, ActaStatus } from '../types';
-import { MOCK_LOG_ENTRIES, MOCK_COMMUNICATIONS, MOCK_ACTAS, MOCK_COST_ACTAS, MOCK_USER, MOCK_WORK_ACTAS, MOCK_CONTRACT_ITEMS, MOCK_PROJECT, MOCK_CONTROL_POINTS, MOCK_PROJECT_TASKS, MOCK_CONTRACT_MODIFICATIONS, MOCK_PROJECT_DETAILS, MOCK_REPORTS, MOCK_USERS } from '../services/mockData';
+import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment, EntryStatus, ActaStatus, Drawing, DrawingDiscipline, DrawingStatus, DrawingVersion } from '../types';
+import { MOCK_LOG_ENTRIES, MOCK_COMMUNICATIONS, MOCK_ACTAS, MOCK_COST_ACTAS, MOCK_USER, MOCK_WORK_ACTAS, MOCK_CONTRACT_ITEMS, MOCK_PROJECT, MOCK_CONTROL_POINTS, MOCK_PROJECT_TASKS, MOCK_CONTRACT_MODIFICATIONS, MOCK_PROJECT_DETAILS, MOCK_REPORTS, MOCK_USERS, MOCK_DRAWINGS } from '../services/mockData';
 
 const API_DELAY = 500; // 500ms delay to simulate network latency
 
@@ -43,6 +43,7 @@ export const useMockApi = () => {
   const [contractModifications, setContractModifications] = useState<ContractModification[]>([]);
   const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
+  const [drawings, setDrawings] = useState<Drawing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +63,7 @@ export const useMockApi = () => {
           setContractModifications(MOCK_CONTRACT_MODIFICATIONS);
           setProjectDetails(MOCK_PROJECT_DETAILS);
           setReports(MOCK_REPORTS);
+          setDrawings(MOCK_DRAWINGS);
           setError(null);
         } catch (e) {
           setError('Failed to fetch mock data.');
@@ -573,6 +575,95 @@ export const useMockApi = () => {
       });
   };
 
+  // --- DRAWINGS API ---
 
-  return { login, logEntries, communications, actas, costActas, workActas, contractItems, controlPoints, projectTasks, contractModifications, projectDetails, reports, isLoading, error, addEntry, updateEntry, addCommentToEntry, addCommunication, addActa, updateCommunicationStatus, updateActa, addCostActa, updateCostActa, setLogEntries, addWorkActa, updateWorkActa, addControlPoint, addPhotoToControlPoint, addContractModification, addReport, updateReport, sendCommitmentReminderEmail, addSignature };
+  const addDrawing = async (data: Omit<Drawing, 'id' | 'status' | 'versions' | 'comments'>, file: File, uploader: User): Promise<void> => {
+     return new Promise((resolve) => {
+        setTimeout(() => {
+            const newVersion: DrawingVersion = {
+                id: `ver-${Date.now()}`,
+                versionNumber: 1,
+                fileName: file.name,
+                url: URL.createObjectURL(file), // Mock URL
+                size: file.size,
+                uploadDate: new Date().toISOString(),
+                uploader: uploader,
+            };
+            const newDrawing: Drawing = {
+                ...data,
+                id: `drawing-${Date.now()}`,
+                status: DrawingStatus.VIGENTE,
+                versions: [newVersion],
+                comments: [],
+            };
+            setDrawings(prev => [newDrawing, ...prev]);
+            resolve();
+        }, API_DELAY);
+     });
+  };
+  
+  const addDrawingVersion = async (drawingId: string, file: File, uploader: User): Promise<void> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            setDrawings(prev => prev.map(d => {
+                if (d.id === drawingId) {
+                    const latestVersionNumber = d.versions[0]?.versionNumber || 0;
+                    const newVersion: DrawingVersion = {
+                        id: `ver-${Date.now()}`,
+                        versionNumber: latestVersionNumber + 1,
+                        fileName: file.name,
+                        url: URL.createObjectURL(file), // Mock URL
+                        size: file.size,
+                        uploadDate: new Date().toISOString(),
+                        uploader: uploader,
+                    };
+                    return {
+                        ...d,
+                        status: DrawingStatus.VIGENTE,
+                        versions: [newVersion, ...d.versions], // Add to the front
+                    };
+                }
+                return d;
+            }));
+            resolve();
+        }, API_DELAY);
+    });
+  };
+  
+  const addCommentToDrawing = async (drawingId: string, commentText: string, author: User): Promise<Drawing | undefined> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            let resultDrawing: Drawing | undefined;
+            setDrawings(prev => {
+                const drawingIndex = prev.findIndex(d => d.id === drawingId);
+                if (drawingIndex === -1) {
+                    resolve(undefined);
+                    return prev;
+                }
+                
+                const originalDrawing = prev[drawingIndex];
+
+                const newComment: Comment = {
+                    id: `comment-draw-${Date.now()}`,
+                    user: author,
+                    content: commentText,
+                    timestamp: new Date().toISOString(),
+                };
+
+                const updatedDrawing: Drawing = {
+                    ...originalDrawing,
+                    comments: [...originalDrawing.comments, newComment],
+                };
+
+                resultDrawing = updatedDrawing;
+                const newDrawings = [...prev];
+                newDrawings[drawingIndex] = updatedDrawing;
+                return newDrawings;
+            });
+            resolve(resultDrawing);
+        }, API_DELAY);
+    });
+  };
+
+  return { login, logEntries, communications, actas, costActas, workActas, contractItems, controlPoints, projectTasks, contractModifications, projectDetails, reports, drawings, isLoading, error, addEntry, updateEntry, addCommentToEntry, addCommunication, addActa, updateCommunicationStatus, updateActa, addCostActa, updateCostActa, setLogEntries, addWorkActa, updateWorkActa, addControlPoint, addPhotoToControlPoint, addContractModification, addReport, updateReport, sendCommitmentReminderEmail, addSignature, addDrawing, addDrawingVersion, addCommentToDrawing };
 };

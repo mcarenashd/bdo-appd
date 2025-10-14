@@ -156,6 +156,44 @@ export interface LogEntry {
   signatures: Signature[];
 }
 
+// DRAWINGS (PLANOS)
+export enum DrawingDiscipline {
+  ARQUITECTONICO = 'Arquitectónico',
+  ESTRUCTURAL = 'Estructural',
+  ELECTRICO = 'Eléctrico',
+  HIDROSANITARIO = 'Hidrosanitario',
+  MECANICO = 'Mecánico',
+  URBANISMO = 'Urbanismo y Paisajismo',
+  SEÑALIZACION = 'Señalización y PMT',
+  GEOTECNIA = 'Geotecnia y Suelos',
+  OTHER = 'Otro',
+}
+
+export enum DrawingStatus {
+  VIGENTE = 'Vigente',
+  OBSOLETO = 'Obsoleto',
+}
+
+export interface DrawingVersion {
+  id: string;
+  versionNumber: number;
+  fileName: string;
+  url: string;
+  size: number;
+  uploadDate: string; // ISO date string
+  uploader: User;
+}
+
+export interface Drawing {
+  id: string;
+  code: string; // e.g. "EST-001"
+  title: string;
+  discipline: DrawingDiscipline;
+  status: DrawingStatus;
+  versions: DrawingVersion[]; // Newest version is always at index 0
+  comments: Comment[];
+}
+
 // COMMUNICATIONS (COMUNICACIONES)
 export enum CommunicationStatus {
   PENDIENTE = 'Pendiente',

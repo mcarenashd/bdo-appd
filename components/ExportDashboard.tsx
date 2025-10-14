@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { ProjectDetails, LogEntry, Communication, Acta, Report, Attachment } from '../types';
 import { useMockApi } from '../hooks/useMockApi';
@@ -33,7 +34,7 @@ Folio: #${entry.folioNumber}
 Título: ${entry.title}
 Estado: ${entry.status}
 Tipo: ${entry.type}
-{/* Fix: Replaced `author.name` with `author.fullName`. */}
+// Fix: Removed invalid JSX comments inside template literal and corrected reference to entry.author to fix "Cannot find name 'author'" error.
 Autor: ${entry.author.fullName}
 Fecha de Creación: ${new Date(entry.createdAt).toLocaleString('es-CO')}
 Fecha de Actividad: ${new Date(entry.activityStartDate).toLocaleDateString('es-CO')} a ${new Date(entry.activityEndDate).toLocaleDateString('es-CO')}
@@ -49,7 +50,7 @@ ${entry.description}
 --------------------------------------------------
 COMENTARIOS (${entry.comments.length})
 --------------------------------------------------
-{/* Fix: Replaced `user.name` with `user.fullName`. */}
+// Fix: Removed invalid JSX comment from template literal to fix "Cannot find name 'user'" error.
 ${entry.comments.map(c => `[${new Date(c.timestamp).toLocaleString('es-CO')}] ${c.user.fullName}: ${c.content}`).join('\n') || 'Sin comentarios.'}
 
 --------------------------------------------------
@@ -79,9 +80,9 @@ ${acta.summary}
 --------------------------------------------------
 COMPROMISOS (${acta.commitments.length})
 --------------------------------------------------
+// Fix: Removed invalid JSX comments from template literal to fix multiple errors including "Cannot find name 'responsible'".
 ${acta.commitments.map(c => 
 `* [${c.status}] ${c.description}
-  {/* Fix: Replaced `responsible.name` with `responsible.fullName`. */}
   - Responsable: ${c.responsible.fullName}
   - Vence: ${new Date(c.dueDate).toLocaleDateString('es-CO')}
 `).join('\n\n') || 'Sin compromisos.'}

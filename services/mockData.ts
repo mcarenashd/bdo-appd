@@ -1,4 +1,4 @@
-import { User, UserRole, Project, LogEntry, EntryStatus, EntryType, Comment, Attachment, Communication, CommunicationStatus, StatusChange, Acta, ActaStatus, Commitment, CommitmentStatus, ActaArea, CostActa, CostActaStatus, Observation, ContractItem, WorkActa, WorkActaStatus, WorkActaItem, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, KeyPersonnel, Report, ReportStatus, ModificationType, ReportScope, DeliveryMethod, AppSettings, AuditLogEntry, AppRole } from '../types';
+import { User, UserRole, Project, LogEntry, EntryStatus, EntryType, Comment, Attachment, Communication, CommunicationStatus, StatusChange, Acta, ActaStatus, Commitment, CommitmentStatus, ActaArea, CostActa, CostActaStatus, Observation, ContractItem, WorkActa, WorkActaStatus, WorkActaItem, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, KeyPersonnel, Report, ReportStatus, ModificationType, ReportScope, DeliveryMethod, AppSettings, AuditLogEntry, AppRole, Drawing, DrawingDiscipline, DrawingStatus } from '../types';
 
 export const MOCK_USERS: User[] = [
   { id: 'user-1', fullName: 'Ana García (Residente)', projectRole: UserRole.RESIDENT, appRole: 'editor', avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg', email: 'ana.garcia@constructora.com', password: 'password123', status: 'active', lastLoginAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString() },
@@ -54,6 +54,62 @@ export const MOCK_AUDIT_LOGS: AuditLogEntry[] = [
         entityType: 'user',
         entityId: 'user-5'
     }
+];
+
+// New Mock Data for Drawings
+const samplePdfUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+
+export const MOCK_DRAWINGS: Drawing[] = [
+  {
+    id: 'drawing-1',
+    code: 'EST-001-A',
+    title: 'Detalles de Cimentación - Pilotes Eje Central',
+    discipline: DrawingDiscipline.ESTRUCTURAL,
+    status: DrawingStatus.VIGENTE,
+    versions: [
+      { id: 'ver-1-2', versionNumber: 2, fileName: 'EST-001-A_RevB.pdf', url: samplePdfUrl, size: 3456789, uploadDate: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[1] },
+      { id: 'ver-1-1', versionNumber: 1, fileName: 'EST-001-A_RevA.pdf', url: samplePdfUrl, size: 3123456, uploadDate: new Date(Date.now() - 20 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[1] },
+    ],
+    comments: [
+        { id: 'd-comment-1', user: MOCK_USERS[1], content: 'Revisión preliminar OK. Favor verificar las cotas de la viga cabezal.', timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 'd-comment-2', user: MOCK_USERS[0], content: 'Recibido. Estamos verificando las cotas y subiremos la revisión B a la brevedad.', timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+    ]
+  },
+  {
+    id: 'drawing-2',
+    code: 'ARQ-102',
+    title: 'Planta General de Urbanismo y Paisajismo',
+    discipline: DrawingDiscipline.ARQUITECTONICO,
+    status: DrawingStatus.VIGENTE,
+    versions: [
+      { id: 'ver-2-1', versionNumber: 1, fileName: 'ARQ-102_Paisajismo_RevA.pdf', url: samplePdfUrl, size: 5678901, uploadDate: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[0] },
+    ],
+    comments: []
+  },
+   {
+    id: 'drawing-3',
+    code: 'PMT-05',
+    title: 'Plan de Manejo de Tráfico - Fase II',
+    discipline: DrawingDiscipline.SEÑALIZACION,
+    status: DrawingStatus.VIGENTE,
+    versions: [
+      { id: 'ver-3-3', versionNumber: 3, fileName: 'PMT-05_Fase2_RevC.pdf', url: samplePdfUrl, size: 2345678, uploadDate: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[2] },
+      { id: 'ver-3-2', versionNumber: 2, fileName: 'PMT-05_Fase2_RevB.pdf', url: samplePdfUrl, size: 2145678, uploadDate: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[2] },
+      { id: 'ver-3-1', versionNumber: 1, fileName: 'PMT-05_Fase2_RevA.pdf', url: samplePdfUrl, size: 2045678, uploadDate: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[2] },
+    ],
+    comments: []
+  },
+  {
+    id: 'drawing-4',
+    code: 'HID-201',
+    title: 'Red de Alcantarillado Pluvial',
+    discipline: DrawingDiscipline.HIDROSANITARIO,
+    status: DrawingStatus.OBSOLETO,
+    versions: [
+       { id: 'ver-4-1', versionNumber: 1, fileName: 'HID-201_Pluvial_RevA.dwg', url: '#', size: 4567890, uploadDate: new Date(Date.now() - 50 * 24 * 3600 * 1000).toISOString(), uploader: MOCK_USERS[0] },
+    ],
+    comments: []
+  },
 ];
 
 
