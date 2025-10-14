@@ -100,6 +100,7 @@ export interface Comment {
   user: User;
   content: string;
   timestamp: string; // ISO date string
+  attachments?: Attachment[];
 }
 
 export interface Change {

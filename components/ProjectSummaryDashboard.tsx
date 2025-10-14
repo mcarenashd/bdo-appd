@@ -84,6 +84,24 @@ const ProjectSummaryDashboard: React.FC<ProjectSummaryDashboardProps> = ({ proje
             </div>
         </div>
       </Card>
+      
+      <Card>
+        <div className="p-5">
+            <h3 className="text-lg font-semibold text-gray-800">Ubicación del Proyecto y Zona de Intervención</h3>
+            <div className="mt-4 aspect-video bg-gray-200 rounded-lg overflow-hidden border">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31815.1878679887!2d-74.16110996885376!3d4.63351932375544!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9c19395297e3%3A0x2502b21b0213136a!2sAv.%20Ciudad%20de%20Cali%2C%20Bogot%C3%A1!5e0!3m2!1ses-419!2sco!4v1716312573215!5m2!1ses-419!2sco"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Mapa de Ubicación del Proyecto"
+                ></iframe>
+            </div>
+        </div>
+      </Card>
 
       <Card>
         <div className="p-5">

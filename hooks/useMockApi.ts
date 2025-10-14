@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { LogEntry, Communication, CommunicationStatus, Acta, CostActa, CostActaStatus, Attachment, WorkActa, ContractItem, WorkActaStatus, Change, Comment, User, ControlPoint, PhotoEntry, ProjectTask, ContractModification, ProjectDetails, Report, ReportStatus, Commitment, EntryStatus, ActaStatus, Drawing, DrawingDiscipline, DrawingStatus, DrawingVersion } from '../types';
 import { MOCK_LOG_ENTRIES, MOCK_COMMUNICATIONS, MOCK_ACTAS, MOCK_COST_ACTAS, MOCK_USER, MOCK_WORK_ACTAS, MOCK_CONTRACT_ITEMS, MOCK_PROJECT, MOCK_CONTROL_POINTS, MOCK_PROJECT_TASKS, MOCK_CONTRACT_MODIFICATIONS, MOCK_PROJECT_DETAILS, MOCK_REPORTS, MOCK_USERS, MOCK_DRAWINGS } from '../services/mockData';
@@ -103,14 +104,24 @@ export const useMockApi = () => {
     });
   };
   
-  const addEntry = async (newEntryData: Omit<LogEntry, 'id' | 'folioNumber' | 'createdAt' | 'author' | 'comments' | 'history' | 'updatedAt'>, author: User): Promise<void> => {
+  const addEntry = async (newEntryData: Omit<LogEntry, 'id' | 'folioNumber' | 'createdAt' | 'author' | 'comments' | 'history' | 'updatedAt' | 'attachments'>, files: File[], author: User): Promise<void> => {
      return new Promise((resolve) => {
         setTimeout(() => {
             const now = new Date().toISOString();
             const newFolio = logEntries.length > 0 ? Math.max(...logEntries.map(e => e.folioNumber)) + 1 : 1001;
+            
+            const newAttachments: Attachment[] = files.map((file, index) => ({
+                id: `att-${Date.now()}-${index}`,
+                fileName: file.name,
+                size: file.size,
+                type: file.type,
+                url: URL.createObjectURL(file), // Mock URL
+            }));
+
             const newEntry: LogEntry = {
                 ...newEntryData,
                 id: `entry-${Date.now()}`,
+                attachments: newAttachments,
                 folioNumber: newFolio,
                 createdAt: now,
                 updatedAt: now,
@@ -275,7 +286,7 @@ export const useMockApi = () => {
     });
   };
 
-  const addCommentToEntry = async (entryId: string, commentText: string, author: User): Promise<LogEntry | undefined> => {
+  const addCommentToEntry = async (entryId: string, commentText: string, files: File[], author: User): Promise<LogEntry | undefined> => {
     return new Promise((resolve) => {
         setTimeout(() => {
             let resultEntry: LogEntry | undefined;
@@ -288,11 +299,20 @@ export const useMockApi = () => {
                 
                 const originalEntry = prev[entryIndex];
 
+                const newAttachments: Attachment[] = files.map((file, index) => ({
+                    id: `comment-att-${Date.now()}-${index}`,
+                    fileName: file.name,
+                    size: file.size,
+                    type: file.type,
+                    url: URL.createObjectURL(file),
+                }));
+
                 const newComment: Comment = {
                     id: `comment-${Date.now()}`,
                     user: author,
                     content: commentText,
                     timestamp: new Date().toISOString(),
+                    attachments: newAttachments,
                 };
 
                 const updatedEntry: LogEntry = {

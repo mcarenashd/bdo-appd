@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { LogEntry, EntryStatus, EntryType, User, UserRole } from '../types';
+import { LogEntry, EntryStatus, EntryType, User, UserRole, Attachment } from '../types';
 import Modal from './ui/Modal';
 import Badge from './ui/Badge';
 import Button from './ui/Button';
@@ -8,7 +8,7 @@ import AttachmentItem from './AttachmentItem';
 import Input from './ui/Input';
 import Select from './ui/Select';
 import ChangeHistory from './ChangeHistory';
-import { LockClosedIcon, XMarkIcon, PaperClipIcon } from './icons/Icon';
+import { LockClosedIcon, XMarkIcon, PaperClipIcon, DocumentArrowDownIcon } from './icons/Icon';
 import SignatureBlock from './SignatureBlock';
 import SignatureModal from './SignatureModal';
 
@@ -17,7 +17,7 @@ interface EntryDetailModalProps {
   onClose: () => void;
   entry: LogEntry;
   onUpdate: (updatedEntry: LogEntry) => void;
-  onAddComment: (entryId: string, commentText: string) => Promise<void>;
+  onAddComment: (entryId: string, commentText: string, files: File[]) => Promise<void>;
   onSign: (documentId: string, documentType: 'logEntry', signer: User) => Promise<LogEntry | any>;
   currentUser: User;
   allUsers: User[];
@@ -30,11 +30,22 @@ const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label,
     </div>
 );
 
+const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
+
 const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, entry, onUpdate, onAddComment, onSign, currentUser, allUsers }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState<LogEntry>(entry);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [commentFiles, setCommentFiles] = useState<File[]>([]);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
 
@@ -47,6 +58,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
         setIsEditing(false);
         setNewFiles([]);
         setNewComment('');
+        setCommentFiles([]);
         setValidationError(null);
       }, 300);
       return () => clearTimeout(timer);
@@ -68,6 +80,12 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
         setNewFiles(prev => [...prev, ...Array.from(e.target.files!)]);
     }
   };
+  
+  const handleCommentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+        setCommentFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
 
   const handleRemoveExistingAttachment = (attachmentId: string) => {
     setEditedEntry(prev => ({
@@ -80,6 +98,10 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
     setNewFiles(prev => prev.filter(file => file !== fileToRemove));
   };
   
+  const handleRemoveCommentFile = (fileToRemove: File) => {
+    setCommentFiles(prev => prev.filter(file => file !== fileToRemove));
+  };
+
   const handleAssigneeChange = (user: User, isChecked: boolean) => {
     setEditedEntry(prev => {
         const currentAssignees = prev.assignees || [];
@@ -96,9 +118,10 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim()) {
-        await onAddComment(entry.id, newComment.trim());
+    if (newComment.trim() || commentFiles.length > 0) {
+        await onAddComment(entry.id, newComment.trim(), commentFiles);
         setNewComment('');
+        setCommentFiles([]);
     }
   };
 
@@ -117,7 +140,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
     const newAttachments = newFiles.map(file => ({
         id: `att-${Date.now()}-${file.name}`,
         fileName: file.name,
-        url: '#', // This would be a real URL after upload
+        url: URL.createObjectURL(file), // This would be a real URL after upload
         size: file.size,
         type: file.type,
     }));
@@ -164,7 +187,6 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
     return localISOTime.substring(0, 16);
   };
 
-  // Fix: Replaced `currentUser.role` with `currentUser.projectRole`.
   const canEdit = currentUser.id === entry.author.id || currentUser.projectRole === UserRole.ADMIN;
   
   return (
@@ -200,7 +222,6 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6">
-                {/* Fix: Replaced `author.name` with `author.fullName`. */}
                 <DetailRow label="Autor" value={author.fullName} />
                 {isEditing ? (
                     <Input label="Fecha de Creación" name="createdAt" type="datetime-local" value={toDatetimeLocal(createdAt)} onChange={handleInputChange} />
@@ -258,12 +279,9 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                                         </div>
                                         <div className="ml-3 text-sm flex items-center">
                                             <label htmlFor={`user-${user.id}`} className="font-medium text-gray-700 flex items-center cursor-pointer">
-                                                {/* Fix: Replaced `user.name` with `user.fullName`. */}
                                                 <img src={user.avatarUrl} alt={user.fullName} className="h-6 w-6 rounded-full mr-2" />
-                                                {/* Fix: Replaced `user.name` with `user.fullName`. */}
                                                 {user.fullName}
                                             </label>
-                                            {/* Fix: Replaced `user.role` with `user.projectRole`. */}
                                             <span className="ml-2 text-gray-500">({user.projectRole})</span>
                                         </div>
                                     </div>
@@ -276,9 +294,7 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                         {assignees.length > 0 ? (
                             assignees.map(assignee => (
                                 <div key={assignee.id} className="flex items-center space-x-2 bg-gray-100 rounded-full pr-3 py-1 text-sm">
-                                    {/* Fix: Replaced `assignee.name` with `assignee.fullName`. */}
                                     <img src={assignee.avatarUrl} alt={assignee.fullName} className="h-7 w-7 rounded-full object-cover"/>
-                                    {/* Fix: Replaced `assignee.name` with `assignee.fullName`. */}
                                     <span className="font-semibold text-gray-900">{assignee.fullName}</span>
                                 </div>
                             ))
@@ -340,12 +356,33 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                     </div>
                 </div>
             ) : (
-                 attachments.length > 0 && (
+                attachments.length > 0 && (
                     <div>
                         <h4 className="text-md font-semibold text-gray-800">Archivos Adjuntos</h4>
-                        <ul className="mt-2 space-y-2">
-                            {attachments.map(att => <AttachmentItem key={att.id} attachment={att} />)}
-                        </ul>
+                        <div className="mt-2 space-y-3">
+                            {attachments.map(att => {
+                                const isImage = att.type.startsWith('image/');
+                                if (isImage) {
+                                    return (
+                                        <div key={att.id} className="p-2 border rounded-lg">
+                                            <a href={att.url} target="_blank" rel="noopener noreferrer">
+                                                <img src={att.url} alt={att.fileName} className="max-h-80 w-auto rounded-md border cursor-pointer hover:opacity-90" />
+                                            </a>
+                                            <div className="mt-2 flex items-center justify-between text-sm">
+                                                <p className="font-medium text-gray-700 truncate">{att.fileName}</p>
+                                                <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                                                    <span className="text-gray-500">{formatBytes(att.size)}</span>
+                                                    <a href={att.url} download={att.fileName} className="font-medium text-brand-primary hover:text-brand-secondary">
+                                                      Descargar
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return <AttachmentItem key={att.id} attachment={att} />;
+                            })}
+                        </div>
                     </div>
                 )
             )}
@@ -367,15 +404,36 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                     <div className="mt-2 space-y-4 max-h-40 overflow-y-auto pr-2">
                         {comments.map(comment => (
                             <div key={comment.id} className="flex items-start space-x-3">
-                                {/* Fix: Replaced `comment.user.name` with `comment.user.fullName`. */}
                                 <img src={comment.user.avatarUrl} alt={comment.user.fullName} className="h-8 w-8 rounded-full object-cover"/>
                                 <div className="flex-1">
                                     <div className="text-sm">
-                                        {/* Fix: Replaced `comment.user.name` with `comment.user.fullName`. */}
                                         <span className="font-semibold text-gray-900">{comment.user.fullName}</span>
                                         <span className="text-gray-500 ml-2 text-xs">{new Date(comment.timestamp).toLocaleString('es-CO')}</span>
                                     </div>
-                                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-md">{comment.content}</p>
+                                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-md whitespace-pre-wrap">{comment.content}</p>
+                                    {comment.attachments && comment.attachments.length > 0 && (
+                                        <div className="mt-2 space-y-3">
+                                            {comment.attachments.map(att => {
+                                                const isImage = att.type.startsWith('image/');
+                                                if (isImage) {
+                                                    return (
+                                                        <div key={att.id}>
+                                                           <a href={att.url} target="_blank" rel="noopener noreferrer">
+                                                                <img src={att.url} alt={att.fileName} className="max-h-40 rounded border cursor-pointer hover:opacity-90" />
+                                                           </a>
+                                                           <div className="text-xs text-gray-500 mt-1">
+                                                               {att.fileName} - 
+                                                               <a href={att.url} download={att.fileName} className="ml-1 font-medium text-brand-primary hover:text-brand-secondary">
+                                                                 Descargar
+                                                               </a>
+                                                           </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return <AttachmentItem key={att.id} attachment={att} />;
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -387,7 +445,6 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
 
             <div className="pt-4 border-t">
               <form onSubmit={handleCommentSubmit} className="flex items-start space-x-3">
-                {/* Fix: Replaced `currentUser.name` with `currentUser.fullName`. */}
                 <img src={currentUser.avatarUrl} alt={currentUser.fullName} className="h-8 w-8 rounded-full object-cover"/>
                 <div className="flex-1">
                   <textarea
@@ -397,8 +454,25 @@ const EntryDetailModal: React.FC<EntryDetailModalProps> = ({ isOpen, onClose, en
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                   ></textarea>
-                  <div className="mt-2 flex justify-end">
-                    <Button type="submit" size="sm" disabled={!newComment.trim()}>
+                  {commentFiles.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                            {commentFiles.map((file, index) => (
+                                <div key={index} className="flex items-center justify-between py-1 pl-2 pr-1 text-sm bg-blue-50 rounded-md border border-blue-200">
+                                    <span className="truncate font-medium flex-1 w-0 text-gray-700">{file.name}</span>
+                                    <button type="button" onClick={() => handleRemoveCommentFile(file)} className="ml-2 flex-shrink-0 text-red-500 hover:text-red-700">
+                                        <XMarkIcon className="h-4 w-4"/>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                  <div className="mt-2 flex justify-between items-center">
+                    <label htmlFor="comment-file-upload" className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 cursor-pointer">
+                        <PaperClipIcon className="h-4 w-4 mr-2"/>
+                        <span>Adjuntar</span>
+                        <input id="comment-file-upload" type="file" multiple onChange={handleCommentFileChange} className="sr-only" />
+                    </label>
+                    <Button type="submit" size="sm" disabled={!newComment.trim() && commentFiles.length === 0}>
                       Publicar Comentario
                     </Button>
                   </div>

@@ -95,9 +95,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project, api, initi
     setIsFormModalOpen(true);
   };
 
-  const handleSaveEntry = async (newEntryData: Omit<LogEntry, 'id' | 'folioNumber' | 'createdAt' | 'author' | 'comments' | 'history' | 'updatedAt'>) => {
+  const handleSaveEntry = async (newEntryData: Omit<LogEntry, 'id' | 'folioNumber' | 'createdAt' | 'author' | 'comments' | 'history' | 'updatedAt' | 'attachments'>, files: File[]) => {
     if (!user) return;
-    await addEntry(newEntryData, user);
+    await addEntry(newEntryData, files, user);
     handleCloseForm();
   };
   
@@ -109,9 +109,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project, api, initi
     }
   };
   
-  const handleAddComment = async (entryId: string, commentText: string) => {
+  const handleAddComment = async (entryId: string, commentText: string, files: File[]) => {
     if (!user) return;
-    const updatedEntry = await addCommentToEntry(entryId, commentText, user);
+    const updatedEntry = await addCommentToEntry(entryId, commentText, files, user);
     if (updatedEntry) {
         setSelectedEntry(updatedEntry);
     }

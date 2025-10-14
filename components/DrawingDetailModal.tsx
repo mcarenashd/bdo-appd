@@ -22,7 +22,6 @@ const DrawingDetailModal: React.FC<DrawingDetailModalProps> = ({ isOpen, onClose
   const latestVersion = drawing.versions[0];
   const isPdf = latestVersion.fileName.toLowerCase().endsWith('.pdf');
   const isImage = /\.(jpg|jpeg|png|gif)$/i.test(latestVersion.fileName);
-  const isBlobUrl = latestVersion.url.startsWith('blob:');
 
   const formatBytes = (bytes: number, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
@@ -56,25 +55,17 @@ const DrawingDetailModal: React.FC<DrawingDetailModalProps> = ({ isOpen, onClose
         <div>
           <h4 className="text-md font-semibold text-gray-800">Vista Previa (Versión {latestVersion.versionNumber})</h4>
           <div className="mt-2 w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center border">
-            {isBlobUrl ? (
-                <div className="text-center p-4">
-                    <MapIcon className="h-16 w-16 text-gray-400 mx-auto" />
-                    <p className="mt-2 text-sm text-gray-500">La vista previa para archivos recién cargados no está disponible por seguridad del navegador.</p>
-                    <a href={latestVersion.url} download={latestVersion.fileName} className="mt-3 inline-block text-brand-primary font-semibold text-sm hover:underline">
-                        Descargar archivo para ver
-                    </a>
-                </div>
+            {isImage ? (
+              <img src={latestVersion.url} alt={`Vista previa de ${latestVersion.fileName}`} className="object-contain w-full h-full" />
             ) : isPdf ? (
               <iframe src={latestVersion.url} width="100%" height="100%" title={latestVersion.fileName} className="border-0">
                 <p className="p-4 text-center text-sm text-gray-500">Tu navegador no soporta iframes. <a href={latestVersion.url} className="text-brand-primary font-semibold">Descarga el archivo</a>.</p>
               </iframe>
-            ) : isImage ? (
-              <img src={latestVersion.url} alt={`Vista previa de ${latestVersion.fileName}`} className="object-contain w-full h-full" />
             ) : (
                 <div className="text-center p-4">
                     <MapIcon className="h-16 w-16 text-gray-400 mx-auto" />
                     <p className="mt-2 text-sm text-gray-500">Vista previa no disponible para este tipo de archivo.</p>
-                    <a href={latestVersion.url} download className="mt-2 inline-block text-brand-primary font-semibold text-sm">Descargar archivo</a>
+                    <a href={latestVersion.url} download={latestVersion.fileName} className="mt-2 inline-block text-brand-primary font-semibold text-sm">Descargar archivo</a>
                 </div>
             )}
           </div>

@@ -7,11 +7,12 @@ import Modal from './ui/Modal';
 import Button from './ui/Button';
 import Input from './ui/Input';
 import Select from './ui/Select';
+import { XMarkIcon } from './icons/Icon';
 
 interface EntryFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (entryData: Omit<LogEntry, 'id' | 'folioNumber' | 'createdAt' | 'author' | 'comments' | 'history' | 'updatedAt'>) => void;
+  onSave: (entryData: Omit<LogEntry, 'id' | 'folioNumber' | 'createdAt' | 'author' | 'comments' | 'history' | 'updatedAt' | 'attachments'>, files: File[]) => void;
   initialDate?: string | null;
   allUsers: User[];
 }
@@ -26,6 +27,7 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
   const [activityEndDate, setActivityEndDate] = useState('');
   const [isConfidential, setIsConfidential] = useState(false);
   const [assignees, setAssignees] = useState<User[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [validationError, setValidationError] = useState<string | null>(null);
   
   const resetForm = () => {
@@ -38,6 +40,7 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
     setActivityEndDate('');
     setIsConfidential(false);
     setAssignees([]);
+    setFiles([]);
     setValidationError(null);
   };
 
@@ -69,6 +72,17 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
         return prev;
     });
   };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
+
+  const removeFile = (fileToRemove: File) => {
+    setFiles(prev => prev.filter(f => f !== fileToRemove));
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,12 +112,10 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
       activityEndDate,
       isConfidential,
       status: EntryStatus.SUBMITTED,
-      attachments: [], // File upload would be implemented here
       assignees,
-      // Fix: Add missing properties to satisfy the LogEntry type
       requiredSignatories: [],
       signatures: [],
-    });
+    }, files);
   };
 
   return (
@@ -164,10 +176,28 @@ const EntryFormModal: React.FC<EntryFormModalProps> = ({ isOpen, onClose, onSave
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
             <div className="space-y-1 text-center">
               <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <div className="flex text-sm text-gray-600"><p className="pl-1">o arrastra y suelta</p></div>
+              <div className="flex text-sm text-gray-600">
+                <label htmlFor="file-upload-entry" className="relative cursor-pointer bg-white rounded-md font-medium text-brand-primary hover:text-brand-secondary focus-within:outline-none">
+                  <span>Carga uno o más archivos</span>
+                  <input id="file-upload-entry" name="file-upload-entry" type="file" className="sr-only" onChange={handleFileChange} multiple />
+                </label>
+                <p className="pl-1">o arrastra y suelta</p>
+              </div>
               <p className="text-xs text-gray-500">PNG, JPG, PDF hasta 10MB</p>
             </div>
           </div>
+           {files.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {files.map((file, index) => (
+                <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 border rounded">
+                  <span className="truncate font-medium">{file.name}</span>
+                  <button type="button" onClick={() => removeFile(file)} className="text-red-500 hover:text-red-700 ml-2">
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex items-start">
             <div className="flex items-center h-5">
