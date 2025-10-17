@@ -1,23 +1,22 @@
-
 import React from 'react';
 import { User, Signature } from '../types';
 import Button from './ui/Button';
 import { CheckCircleIcon, PencilSquareIcon } from './icons/Icon';
 
 interface SignatureBlockProps {
-  requiredSignatories: User[];
-  signatures: Signature[];
+  requiredSignatories?: User[]; // Hacer opcional
+  signatures?: Signature[];    // Hacer opcional
   currentUser: User;
   onSignRequest: () => void;
   documentType: string;
 }
 
-const SignatureBlock: React.FC<SignatureBlockProps> = ({ requiredSignatories, signatures, currentUser, onSignRequest, documentType }) => {
+const SignatureBlock: React.FC<SignatureBlockProps> = ({ requiredSignatories = [], signatures = [], currentUser, onSignRequest, documentType }) => {
   const signedUserIds = new Set(signatures.map(s => s.signer.id));
   const canCurrentUserSign = requiredSignatories.some(rs => rs.id === currentUser.id) && !signedUserIds.has(currentUser.id);
 
   if (requiredSignatories.length === 0) {
-    return null; // Don't render if no signatures are required
+    return null;
   }
 
   return (
@@ -29,12 +28,9 @@ const SignatureBlock: React.FC<SignatureBlockProps> = ({ requiredSignatories, si
           return (
             <div key={user.id} className="flex items-center justify-between">
               <div className="flex items-center">
-                {/* Fix: Replaced `user.name` with `user.fullName`. */}
                 <img src={user.avatarUrl} alt={user.fullName} className="h-9 w-9 rounded-full object-cover" />
                 <div className="ml-3">
-                  {/* Fix: Replaced `user.name` with `user.fullName`. */}
                   <p className="text-sm font-semibold text-gray-900">{user.fullName}</p>
-                  {/* Fix: Replaced `user.role` with `user.projectRole`. */}
                   <p className="text-xs text-gray-500">{user.projectRole}</p>
                 </div>
               </div>

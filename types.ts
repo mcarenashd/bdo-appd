@@ -101,7 +101,7 @@ export interface Attachment {
 
 export interface Comment {
   id: string;
-  user: User;
+  author: User;
   content: string;
   timestamp: string; // ISO date string
   attachments?: Attachment[];

@@ -1,36 +1,70 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Project, Acta, User } from '../types';
-import { useMockApi } from '../hooks/useMockApi';
-import Button from './ui/Button';
-import { PlusIcon, ClipboardDocumentListIcon } from './icons/Icon';
-import ActaCard from './ActaCard';
-import ActaDetailModal from './ActaDetailModal';
-import ActaFormModal from './ActaFormModal';
-import EmptyState from './ui/EmptyState';
-import ActaFilterBar from './ActaFilterBar';
-import { useAuth } from '../contexts/AuthContext';
-import { MOCK_USERS } from '../services/mockData';
+import React, { useState, useMemo, useEffect } from "react";
+import { Project, Acta, User } from "../types";
+// Se elimina la importación de useMockApi
+import Button from "./ui/Button";
+import { PlusIcon, ClipboardDocumentListIcon } from "./icons/Icon";
+import ActaCard from "./ActaCard";
+import ActaDetailModal from "./ActaDetailModal";
+import ActaFormModal from "./ActaFormModal";
+import EmptyState from "./ui/EmptyState";
+import ActaFilterBar from "./ActaFilterBar";
+import { useAuth } from "../contexts/AuthContext";
+import { MOCK_PROJECT, MOCK_USERS } from "../services/mockData"; // Aún usamos MOCK_PROJECT
 
 interface MinutesDashboardProps {
-  project: Project;
-  api: ReturnType<typeof useMockApi>;
+  // project: Project; // Ya no se recibe por props
   initialItemToOpen: { type: string; id: string } | null;
   clearInitialItem: () => void;
 }
 
-const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initialItemToOpen, clearInitialItem }) => {
+const MinutesDashboard: React.FC<MinutesDashboardProps> = ({
+  initialItemToOpen,
+  clearInitialItem,
+}) => {
   const { user } = useAuth();
-  const { actas, isLoading, error, addActa, updateActa, sendCommitmentReminderEmail, addSignature } = api;
+  const project = MOCK_PROJECT; // Usamos el de prueba por ahora
+
+  // --- ¡NUEVO ESTADO PARA DATOS REALES! ---
+  const [actas, setActas] = useState<Acta[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [selectedActa, setSelectedActa] = useState<Acta | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [filters, setFilters] = useState({
-    searchTerm: '',
-    status: 'all',
-    area: 'all',
-    startDate: '',
-    endDate: '',
+    searchTerm: "",
+    status: "all",
+    area: "all",
+    startDate: "",
+    endDate: "",
   });
+
+  // --- useEffect PARA OBTENER DATOS DEL BACKEND ---
+  useEffect(() => {
+    const fetchActas = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch("http://localhost:4000/api/actas");
+        if (!response.ok) {
+          throw new Error(
+            "La respuesta del servidor para obtener actas no fue exitosa."
+          );
+        }
+        const data = await response.json();
+        setActas(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Ocurrió un error desconocido."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchActas();
+  }, []);
 
   const handleOpenDetail = (acta: Acta) => {
     setSelectedActa(acta);
@@ -38,35 +72,39 @@ const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initi
   };
 
   useEffect(() => {
-    if (initialItemToOpen && initialItemToOpen.type === 'acta') {
-        const actaToOpen = actas.find(a => a.id === initialItemToOpen.id);
-        if (actaToOpen) {
-            handleOpenDetail(actaToOpen);
-        }
-        clearInitialItem();
+    if (initialItemToOpen && initialItemToOpen.type === "acta") {
+      const actaToOpen = actas.find((a) => a.id === initialItemToOpen.id);
+      if (actaToOpen) {
+        handleOpenDetail(actaToOpen);
+      }
+      clearInitialItem();
     }
   }, [initialItemToOpen, actas, clearInitialItem]);
 
   const filteredActas = useMemo(() => {
-    return actas.filter(acta => {
-      const searchTermMatch = acta.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                              acta.number.toLowerCase().includes(filters.searchTerm.toLowerCase());
-      const statusMatch = filters.status === 'all' || acta.status === filters.status;
-      const areaMatch = filters.area === 'all' || acta.area === filters.area;
-      
+    // ... (lógica de filtrado se queda igual) ...
+    return actas.filter((acta) => {
+      const searchTermMatch =
+        acta.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        acta.number.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      const statusMatch =
+        filters.status === "all" || acta.status === filters.status;
+      const areaMatch = filters.area === "all" || acta.area === filters.area;
       const actaDate = new Date(acta.date);
-      actaDate.setHours(0,0,0,0);
-      
+      actaDate.setHours(0, 0, 0, 0);
       const startDate = filters.startDate ? new Date(filters.startDate) : null;
-      if (startDate) startDate.setHours(0,0,0,0);
-
+      if (startDate) startDate.setHours(0, 0, 0, 0);
       const endDate = filters.endDate ? new Date(filters.endDate) : null;
-      if (endDate) endDate.setHours(0,0,0,0);
-
+      if (endDate) endDate.setHours(0, 0, 0, 0);
       const startDateMatch = !startDate || actaDate >= startDate;
       const endDateMatch = !endDate || actaDate <= endDate;
-
-      return searchTermMatch && statusMatch && areaMatch && startDateMatch && endDateMatch;
+      return (
+        searchTermMatch &&
+        statusMatch &&
+        areaMatch &&
+        startDateMatch &&
+        endDateMatch
+      );
     });
   }, [actas, filters]);
 
@@ -83,17 +121,70 @@ const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initi
     setIsFormModalOpen(false);
   };
 
-  const handleSaveActa = async (newActaData: Omit<Acta, 'id'>) => {
-    await addActa(newActaData);
-    handleCloseForm();
+  // --- ¡CONECTAMOS LA FUNCIÓN DE GUARDADO! ---
+  const handleSaveActa = async (newActaData: Omit<Acta, "id">) => {
+    try {
+      const response = await fetch("http://localhost:4000/api/actas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newActaData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falló la creación del acta.");
+      }
+
+      const createdActa = await response.json();
+      setActas((prevActas) => [createdActa, ...prevActas]);
+      handleCloseForm();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Error al guardar el acta."
+      );
+    }
   };
 
-  const handleUpdateActa = async (updatedActa: Acta) => {
-    await updateActa(updatedActa);
-    // Refresh the selectedActa to show the latest data if the modal is reopened
+  // Dejamos estas funciones vacías por ahora, las implementaremos después
+ const handleUpdateActa = async (updatedActa: Acta) => {
+  // La lógica principal será actualizar los compromisos que hayan cambiado
+  const originalActa = actas.find(a => a.id === updatedActa.id);
+  if (!originalActa) return;
+
+  // Comparamos los compromisos para ver cuáles cambiaron de estado
+  for (const updatedCommitment of updatedActa.commitments) {
+    const originalCommitment = originalActa.commitments.find(c => c.id === updatedCommitment.id);
+    if (originalCommitment && originalCommitment.status !== updatedCommitment.status) {
+      // Si el estado cambió, llamamos a la API para actualizarlo
+      try {
+        await fetch(`http://localhost:4000/api/commitments/${updatedCommitment.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: updatedCommitment.status }),
+        });
+      } catch (err) {
+        console.error("Falló al actualizar el compromiso:", updatedCommitment.id);
+        // Podríamos añadir un manejo de error más visible aquí
+      }
+    }
+  }
+
+  // Actualizamos el estado local para que la UI se refleje inmediatamente
+  setActas(prev => prev.map(a => a.id === updatedActa.id ? updatedActa : a));
+  setSelectedActa(updatedActa);
+
+    // Actualizamos el estado local para que la UI se refleje inmediatamente
+    setActas((prev) =>
+      prev.map((a) => (a.id === updatedActa.id ? updatedActa : a))
+    );
     setSelectedActa(updatedActa);
   };
 
+  const sendCommitmentReminderEmail = async (commitment: any, acta: Acta) => {};
+  const addSignature = async (
+    documentId: string,
+    documentType: "acta",
+    signer: User
+  ) => {};
 
   if (!user) return null;
 
@@ -117,19 +208,23 @@ const MinutesDashboard: React.FC<MinutesDashboardProps> = ({ project, api, initi
       {!isLoading && !error && (
         <div>
           {filteredActas.length > 0 ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredActas.map(acta => (
-                  <ActaCard key={acta.id} acta={acta} onSelect={handleOpenDetail} />
-                ))}
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredActas.map((acta) => (
+                <ActaCard
+                  key={acta.id}
+                  acta={acta}
+                  onSelect={handleOpenDetail}
+                />
+              ))}
+            </div>
           ) : (
             <EmptyState
               icon={<ClipboardDocumentListIcon />}
               title="No se encontraron actas"
-              message="No hay actas que coincidan con los filtros seleccionados. Intenta ajustar o limpiar los filtros para ver más resultados."
+              message="No hay actas que coincidan con los filtros seleccionados o aún no se ha registrado ninguna. ¡Crea la primera!"
               actionButton={
-                <Button onClick={() => setFilters({ searchTerm: '', status: 'all', area: 'all', startDate: '', endDate: '' })} variant="secondary">
-                  Limpiar Filtros
+                <Button onClick={handleOpenForm} leftIcon={<PlusIcon />}>
+                  Registrar Primera Acta
                 </Button>
               }
             />

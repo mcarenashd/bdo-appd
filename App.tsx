@@ -118,7 +118,7 @@ const MainApp = () => {
       case 'pending_tasks':
         return <PendingTasksDashboard api={api} onNavigate={handleNavigateAndOpen} />;
       case 'logbook':
-        return <ProjectDashboard project={MOCK_PROJECT} api={api} initialItemToOpen={initialItemToOpen} clearInitialItem={clearInitialItem} />;
+    return <ProjectDashboard initialItemToOpen={initialItemToOpen} clearInitialItem={clearInitialItem} />;
       case 'drawings':
         return <DrawingsDashboard project={MOCK_PROJECT} api={api} />;
       case 'work_progress':
@@ -130,7 +130,7 @@ const MainApp = () => {
       case 'communications':
         return <CommunicationsDashboard project={MOCK_PROJECT} api={api} />;
       case 'minutes':
-        return <MinutesDashboard project={MOCK_PROJECT} api={api} initialItemToOpen={initialItemToOpen} clearInitialItem={clearInitialItem} />;
+        return <MinutesDashboard initialItemToOpen={initialItemToOpen} clearInitialItem={clearInitialItem} />;
       case 'costs':
         return <CostDashboard project={MOCK_PROJECT} api={api} />;
       case 'weekly_reports':
