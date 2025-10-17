@@ -14,7 +14,7 @@ import {
   CalendarIcon,
 } from "./icons/Icon";
 import ExportModal from "./ExportModal";
-import { MOCK_USERS, MOCK_PROJECT } from "../services/mockData";
+import { MOCK_USERS, MOCK_PROJECT } from "../src/services/mockData";
 import CalendarView from "./CalendarView";
 import { useAuth } from "../contexts/AuthContext";
 

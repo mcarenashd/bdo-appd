@@ -9,7 +9,7 @@ import ActaFormModal from "./ActaFormModal";
 import EmptyState from "./ui/EmptyState";
 import ActaFilterBar from "./ActaFilterBar";
 import { useAuth } from "../contexts/AuthContext";
-import { MOCK_PROJECT, MOCK_USERS } from "../services/mockData"; // Aún usamos MOCK_PROJECT
+import { MOCK_PROJECT, MOCK_USERS } from "../src/services/mockData"; // Aún usamos MOCK_PROJECT
 
 interface MinutesDashboardProps {
   // project: Project; // Ya no se recibe por props
@@ -145,32 +145,45 @@ const MinutesDashboard: React.FC<MinutesDashboardProps> = ({
   };
 
   // Dejamos estas funciones vacías por ahora, las implementaremos después
- const handleUpdateActa = async (updatedActa: Acta) => {
-  // La lógica principal será actualizar los compromisos que hayan cambiado
-  const originalActa = actas.find(a => a.id === updatedActa.id);
-  if (!originalActa) return;
+  const handleUpdateActa = async (updatedActa: Acta) => {
+    // La lógica principal será actualizar los compromisos que hayan cambiado
+    const originalActa = actas.find((a) => a.id === updatedActa.id);
+    if (!originalActa) return;
 
-  // Comparamos los compromisos para ver cuáles cambiaron de estado
-  for (const updatedCommitment of updatedActa.commitments) {
-    const originalCommitment = originalActa.commitments.find(c => c.id === updatedCommitment.id);
-    if (originalCommitment && originalCommitment.status !== updatedCommitment.status) {
-      // Si el estado cambió, llamamos a la API para actualizarlo
-      try {
-        await fetch(`http://localhost:4000/api/commitments/${updatedCommitment.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: updatedCommitment.status }),
-        });
-      } catch (err) {
-        console.error("Falló al actualizar el compromiso:", updatedCommitment.id);
-        // Podríamos añadir un manejo de error más visible aquí
+    // Comparamos los compromisos para ver cuáles cambiaron de estado
+    for (const updatedCommitment of updatedActa.commitments) {
+      const originalCommitment = originalActa.commitments.find(
+        (c) => c.id === updatedCommitment.id
+      );
+      if (
+        originalCommitment &&
+        originalCommitment.status !== updatedCommitment.status
+      ) {
+        // Si el estado cambió, llamamos a la API para actualizarlo
+        try {
+          await fetch(
+            `http://localhost:4000/api/commitments/${updatedCommitment.id}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: updatedCommitment.status }),
+            }
+          );
+        } catch (err) {
+          console.error(
+            "Falló al actualizar el compromiso:",
+            updatedCommitment.id
+          );
+          // Podríamos añadir un manejo de error más visible aquí
+        }
       }
     }
-  }
 
-  // Actualizamos el estado local para que la UI se refleje inmediatamente
-  setActas(prev => prev.map(a => a.id === updatedActa.id ? updatedActa : a));
-  setSelectedActa(updatedActa);
+    // Actualizamos el estado local para que la UI se refleje inmediatamente
+    setActas((prev) =>
+      prev.map((a) => (a.id === updatedActa.id ? updatedActa : a))
+    );
+    setSelectedActa(updatedActa);
 
     // Actualizamos el estado local para que la UI se refleje inmediatamente
     setActas((prev) =>
