@@ -129,13 +129,29 @@ const CostDashboard: React.FC<CostDashboardProps> = ({ project }) => {
   // -------------------------------------------------------------
 
   // --- Implementaremos esta después ---
-  const handleUpdateActa = async (updatedActa: CostActa) => {
-      // TODO: Llamar al endpoint PUT /api/cost-actas/:id
-      console.log("Actualizar acta de costo (pendiente):", updatedActa);
-      // Simulación local para ver el cambio inmediato
-      setCostActas(prev => prev.map(a => a.id === updatedActa.id ? updatedActa : a));
-      setSelectedActa(updatedActa);
-      // handleCloseDetail(); // Cerrar modal después de guardar
+const handleUpdateActa = async (updatedActa: CostActa) => {
+    try {
+        // Llamamos al endpoint PUT con el ID y los datos a actualizar
+        const updatedActaFromServer = await apiFetch(`/cost-actas/${updatedActa.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                status: updatedActa.status, // Enviamos el estado en formato frontend
+                relatedProgress: updatedActa.relatedProgress // También actualizamos este campo
+            }),
+        });
+
+        // Actualizamos el estado local
+        setCostActas(prev =>
+            prev.map(acta => acta.id === updatedActaFromServer.id ? updatedActaFromServer : acta)
+        );
+        // Actualizamos el modal si está abierto
+        if (selectedActa && selectedActa.id === updatedActaFromServer.id) {
+            setSelectedActa(updatedActaFromServer);
+        }
+        handleCloseDetail(); // Cerramos el modal
+    } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al actualizar el acta de costo.');
+    }
   };
   // ------------------------------------
 
