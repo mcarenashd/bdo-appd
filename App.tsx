@@ -62,9 +62,13 @@ const MainApp = () => {
           const daysUntilDue = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
           let notification: Notification | null = null;
           if (daysUntilDue < 0) {
-            notification = { /* ... */ };
+            notification = {
+              /* ... */
+            };
           } else if (daysUntilDue <= 3) {
-            notification = { /* ... */ };
+            notification = {
+              /* ... */
+            };
           }
           if (notification) generatedNotifications.push(notification);
         }
@@ -140,33 +144,34 @@ const MainApp = () => {
         );
       case "costs": // Aún usa mock
         return <CostDashboard project={MOCK_PROJECT} api={api} />;
-      case "weekly_reports": // Aún usa mock
-        return <WeeklyReportsDashboard project={projectDetails} api={api} />;
-      case "monthly_reports_obra": // Aún usa mock
+      case "weekly_reports":
+        // Asigna el scope correcto aquí (Obra o Interventoría)
+        // Usaremos projectDetails que viene del mockApi (eventualmente vendrá del backend)
         return (
-          <MonthlyReportsDashboard
-            project={MOCK_PROJECT}
-            api={api}
-            reportScope={ReportScope.OBRA}
-          />
-        );
-      case "monthly_reports_interventoria": // Aún usa mock
-        return (
-          <MonthlyReportsDashboard
-            project={MOCK_PROJECT}
-            api={api}
+          <WeeklyReportsDashboard
+            project={projectDetails}
             reportScope={ReportScope.INTERVENTORIA}
           />
-        );
-      case "export_project": // Aún usa mock
-        return <ExportDashboard project={projectDetails} api={api} />;
-      case "admin":
-        return <AdminDashboard />;
-      default:
+        ); // O ReportScope.OBRA
+      case "monthly_reports_obra":
         return (
-          <ProjectSummaryDashboard
-            project={projectDetails}
-            contractModifications={contractModifications}
+          <MonthlyReportsDashboard
+            project={MOCK_PROJECT} // Puedes usar projectDetails si lo necesitas aquí
+            reportScope={ReportScope.OBRA} // Pasamos el scope correcto
+          />
+        );
+      case "monthly_reports_obra":
+        return (
+          <MonthlyReportsDashboard
+            project={MOCK_PROJECT} // Puedes usar projectDetails si lo necesitas
+            reportScope={ReportScope.OBRA} // Pasamos el scope correcto
+          />
+        );
+      case "monthly_reports_interventoria":
+        return (
+          <MonthlyReportsDashboard
+            project={MOCK_PROJECT} // Puedes usar projectDetails si lo necesitas
+            reportScope={ReportScope.INTERVENTORIA} // Pasamos el scope correcto
           />
         );
     }
