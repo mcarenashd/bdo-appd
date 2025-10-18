@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Project, LogEntry, User } from "../types";
+import apiFetch from "../src/services/api"; // <-- AÑADE ESTA LÍNEA
 import FilterBar from "./FilterBar";
 import EntryCard from "./EntryCard";
 import EntryDetailModal from "./EntryDetailModal";
@@ -194,17 +195,11 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
 
   const handleDeleteEntry = async (entryId: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/log-entries/${entryId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      await apiFetch(`/log-entries/${entryId}`, {
+        method: "DELETE",
+      });
 
-      if (!response.ok) {
-        throw new Error("Falló la eliminación de la anotación.");
-      }
-
+      // Si la llamada a la API fue exitosa, eliminamos la anotación del estado local
       setLogEntries((prevEntries) =>
         prevEntries.filter((entry) => entry.id !== entryId)
       );
@@ -280,23 +275,16 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
 
   const handleUpdateEntry = async (updatedEntryData: LogEntry) => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/log-entries/${updatedEntryData.id}`,
+      // Usamos apiFetch para llamar a nuestro endpoint PUT
+      const updatedEntryFromServer = await apiFetch(
+        `/log-entries/${updatedEntryData.id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(updatedEntryData),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Falló la actualización de la anotación.");
-      }
-
-      const updatedEntryFromServer = await response.json();
-
+      // Actualizamos el estado local con la respuesta fresca del servidor
       setLogEntries((prevEntries) =>
         prevEntries.map((entry) =>
           entry.id === updatedEntryFromServer.id
@@ -304,6 +292,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
             : entry
         )
       );
+      // Actualizamos también la entrada seleccionada si está abierta en el modal
       setSelectedEntry(updatedEntryFromServer);
     } catch (err) {
       if (err instanceof Error) {

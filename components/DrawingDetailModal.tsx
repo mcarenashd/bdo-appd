@@ -111,27 +111,29 @@ const DrawingDetailModal: React.FC<DrawingDetailModalProps> = ({ isOpen, onClose
         </div>
         
         {/* Comments Section */}
-        <div>
-            <h4 className="text-md font-semibold text-gray-800">Comentarios</h4>
-            {drawing.comments && drawing.comments.length > 0 ? (
-                <div className="mt-2 space-y-4 max-h-40 overflow-y-auto pr-2">
-                    {drawing.comments.map(comment => (
-                        <div key={comment.id} className="flex items-start space-x-3">
-                            <img src={comment.user.avatarUrl} alt={comment.user.fullName} className="h-8 w-8 rounded-full object-cover"/>
-                            <div className="flex-1">
-                                <div className="text-sm">
-                                    <span className="font-semibold text-gray-900">{comment.user.fullName}</span>
-                                    <span className="text-gray-500 ml-2 text-xs">{new Date(comment.timestamp).toLocaleString('es-CO')}</span>
-                                </div>
-                                <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-md">{comment.content}</p>
-                            </div>
+       <div>
+    <h4 className="text-md font-semibold text-gray-800">Comentarios</h4>
+    {drawing.comments && drawing.comments.length > 0 ? (
+        <div className="mt-2 space-y-4 max-h-40 overflow-y-auto pr-2">
+            {drawing.comments.map(comment => (
+                <div key={comment.id} className="flex items-start space-x-3">
+                    {/* --- CORRECCIÓN AQUÍ --- */}
+                    <img src={comment.author.avatarUrl} alt={comment.author.fullName} className="h-8 w-8 rounded-full object-cover"/>
+                    <div className="flex-1">
+                        <div className="text-sm">
+                            {/* --- Y CORRECCIÓN AQUÍ --- */}
+                            <span className="font-semibold text-gray-900">{comment.author.fullName}</span>
+                            <span className="text-gray-500 ml-2 text-xs">{new Date(comment.timestamp).toLocaleString('es-CO')}</span>
                         </div>
-                    ))}
+                        <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded-md">{comment.content}</p>
+                    </div>
                 </div>
-            ) : (
-                <p className="mt-2 text-sm text-gray-500">Aún no hay comentarios. ¡Sé el primero en añadir uno!</p>
-            )}
+            ))}
         </div>
+    ) : (
+        <p className="mt-2 text-sm text-gray-500">Aún no hay comentarios. ¡Sé el primero en añadir uno!</p>
+    )}
+</div>
         
         {/* Comment Form */}
         <div className="pt-4 border-t">

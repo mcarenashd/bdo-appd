@@ -1,27 +1,22 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react"; // Añade useEffect
 import {
-  Project,
-  WorkActa,
-  ContractItem,
-  WorkActaStatus,
-  ModificationType,
-  ContractModification,
-} from "../types";
-import { useMockApi } from "../hooks/useMockApi";
+  Project, WorkActa, ContractItem, WorkActaStatus,
+  ModificationType, ContractModification
+} from "../types"; // Asegúrate de que Project está importado
+import apiFetch from "../src/services/api"; // <-- Importa apiFetch
 import Button from "./ui/Button";
 import { PlusIcon, CalculatorIcon } from "./icons/Icon";
 import EmptyState from "./ui/EmptyState";
 import Card from "./ui/Card";
 import WorkActaStatusBadge from "./WorkActaStatusBadge";
-import { MOCK_MAIN_CONTRACT_VALUE } from "../src/services/mockData";
+import { MOCK_MAIN_CONTRACT_VALUE, MOCK_CONTRACT_MODIFICATIONS } from "../src/services/mockData"; // Mantenemos mocks para lo que aún no conectamos
 import WorkActaDetailModal from "./WorkActaDetailModal";
 import WorkActaFormModal from "./WorkActaFormModal";
 import ContractItemsSummaryTable from "./ContractItemsSummaryTable";
 import ContractModificationFormModal from "./ContractModificationFormModal";
 
 interface WorkProgressDashboardProps {
-  project: Project;
-  api: ReturnType<typeof useMockApi>;
+  project: Project; // Mantenemos project por ahora
 }
 
 const KPICard: React.FC<{
@@ -36,26 +31,44 @@ const KPICard: React.FC<{
   </Card>
 );
 
-const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({
-  project,
-  api,
-}) => {
-  const {
-    workActas,
-    contractItems,
-    contractModifications,
-    isLoading,
-    error,
-    addWorkActa,
-    updateWorkActa,
-    addContractModification,
-  } = api;
+const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({ project }) => {
+  // --- Estado local para datos reales ---
+  const [workActas, setWorkActas] = useState<WorkActa[]>([]);
+  const [contractItems, setContractItems] = useState<ContractItem[]>([]);
+  // Mantenemos las modificaciones mock por ahora
+  const [contractModifications, setContractModifications] = useState<ContractModification[]>(MOCK_CONTRACT_MODIFICATIONS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  // ------------------------------------
 
   // State for Work Actas
   const [selectedActa, setSelectedActa] = useState<WorkActa | null>(null);
   const [isActaDetailModalOpen, setIsActaDetailModalOpen] = useState(false);
   const [isActaFormModalOpen, setIsActaFormModalOpen] = useState(false);
   const [isModFormModalOpen, setIsModFormModalOpen] = useState(false);
+
+  // --- useEffect para cargar datos ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        // Usamos Promise.all para cargar ítems y actas en paralelo
+        const [itemsData, actasData] = await Promise.all([
+          apiFetch('/contract-items'),
+          apiFetch('/work-actas')
+        ]);
+        setContractItems(itemsData);
+        setWorkActas(actasData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error al cargar datos de avance.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []); // El array vacío asegura que esto se ejecute solo una vez al montar el componente
+  // ---------------------------------
 
   const contractItemMap = useMemo(() => {
     return new Map(contractItems.map((item) => [item.id, item]));
@@ -153,23 +166,54 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({
     setIsActaDetailModalOpen(false);
   };
 
+  // --- Conecta handleSaveActa ---
   const handleSaveActa = async (newActaData: Omit<WorkActa, "id">) => {
-    await addWorkActa(newActaData);
-    setIsActaFormModalOpen(false);
+    try {
+        // Llamamos al endpoint POST con los datos del formulario
+        const createdActa = await apiFetch('/work-actas', {
+            method: 'POST',
+            body: JSON.stringify(newActaData)
+        });
+        // Añadimos la nueva acta al estado local para verla inmediatamente
+        setWorkActas(prev => [createdActa, ...prev]);
+        setIsActaFormModalOpen(false); // Cerramos el modal
+    } catch (err) {
+        // Mostramos un error si algo falla
+        setError(err instanceof Error ? err.message : 'Error al guardar el acta de avance.');
+    }
   };
+  // -----------------------------
 
-  const handleUpdateActa = async (updatedActa: WorkActa) => {
-    await updateWorkActa(updatedActa);
-    const refreshedActa = workActas.find((a) => a.id === updatedActa.id);
-    setSelectedActa(refreshedActa || updatedActa);
+  // --- Implementaremos estas después ---
+const handleUpdateActa = async (updatedActa: WorkActa) => {
+    try {
+        // Llamamos al endpoint PUT con los datos actualizados (principalmente el estado)
+        const updatedActaFromServer = await apiFetch(`/work-actas/${updatedActa.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: updatedActa.status /*, items: updatedActa.items */ }), // Podríamos enviar 'items' si permitimos editar cantidades
+        });
+
+        // Actualizamos el estado local
+        setWorkActas(prev =>
+            prev.map(acta => acta.id === updatedActaFromServer.id ? updatedActaFromServer : acta)
+        );
+        // Si el modal está abierto, actualizamos también la data seleccionada
+        if (selectedActa && selectedActa.id === updatedActaFromServer.id) {
+            setSelectedActa(updatedActaFromServer);
+        }
+    } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al actualizar el acta de avance.');
+    }
   };
 
   const handleSaveModification = async (
     newModData: Omit<ContractModification, "id">
   ) => {
-    await addContractModification(newModData);
-    setIsModFormModalOpen(false);
+      // TODO: Llamar al endpoint POST /api/contract-modifications (aún no existe)
+      console.log("Guardar modificación (pendiente):", newModData);
+      setIsModFormModalOpen(false);
   };
+  // ------------------------------------
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -235,7 +279,7 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({
         />
       </div>
 
-      {/* Contract Modifications History */}
+      {/* Contract Modifications History (Aún usa MOCK) */}
       <Card>
         <div className="p-4 border-b flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-800">
@@ -255,36 +299,19 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    N° Modificatorio
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Tipo
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Fecha
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right">
-                    Valor / Días
-                  </th>
+                  <th scope="col" className="px-6 py-3">N° Modificatorio</th>
+                  <th scope="col" className="px-6 py-3">Tipo</th>
+                  <th scope="col" className="px-6 py-3">Fecha</th>
+                  <th scope="col" className="px-6 py-3 text-right">Valor / Días</th>
                 </tr>
               </thead>
               <tbody>
                 {contractModifications.map((mod) => (
                   <tr key={mod.id} className="bg-white border-b">
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900"
-                    >
-                      {mod.number}
-                    </th>
+                    <th scope="row" className="px-6 py-4 font-medium text-gray-900">{mod.number}</th>
                     <td className="px-6 py-4">{mod.type}</td>
-                    <td className="px-6 py-4">
-                      {new Date(mod.date).toLocaleDateString("es-CO")}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-right">
-                      {getValueOrDays(mod)}
-                    </td>
+                    <td className="px-6 py-4">{new Date(mod.date).toLocaleDateString("es-CO")}</td>
+                    <td className="px-6 py-4 font-semibold text-right">{getValueOrDays(mod)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -297,13 +324,13 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({
         </div>
       </Card>
 
-      {/* Contract Items Summary Table */}
+      {/* Contract Items Summary Table (Ahora usa datos reales) */}
       <ContractItemsSummaryTable
         items={itemsSummaryData}
         isLoading={isLoading}
       />
 
-      {/* Work Actas History */}
+      {/* Work Actas History (Ahora usa datos reales) */}
       <Card>
         <div className="p-4 border-b flex justify-between items-center">
           <h3 className="text-xl font-semibold text-gray-800">
@@ -319,102 +346,83 @@ const WorkProgressDashboard: React.FC<WorkProgressDashboardProps> = ({
           </Button>
         </div>
         <div className="overflow-x-auto">
-          {workActas.length > 0 ? (
+          {isLoading && <div className="p-6 text-center">Cargando actas...</div>}
+          {error && <div className="p-6 text-center text-red-500">{error}</div>}
+          {!isLoading && !error && workActas.length > 0 ? (
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    N° Acta
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Periodo
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Fecha
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Valor del Periodo
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Estado
-                  </th>
+                  <th scope="col" className="px-6 py-3">N° Acta</th>
+                  <th scope="col" className="px-6 py-3">Periodo</th>
+                  <th scope="col" className="px-6 py-3">Fecha</th>
+                  <th scope="col" className="px-6 py-3">Valor del Periodo</th>
+                  <th scope="col" className="px-6 py-3">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {workActas
-                  .sort(
-                    (a, b) =>
-                      new Date(a.date).getTime() - new Date(b.date).getTime()
-                  )
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Ordenar por fecha más reciente primero
                   .map((acta) => (
                     <tr
                       key={acta.id}
                       className="bg-white border-b hover:bg-gray-50 cursor-pointer"
                       onClick={() => handleOpenDetail(acta)}
                     >
-                      <th
-                        scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                      >
-                        {acta.number}
-                      </th>
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{acta.number}</th>
                       <td className="px-6 py-4">{acta.period}</td>
-                      <td className="px-6 py-4">
-                        {new Date(acta.date).toLocaleDateString("es-CO")}
-                      </td>
-                      <td className="px-6 py-4 font-semibold">
-                        {formatCurrency(getActaTotalValue(acta))}
-                      </td>
-                      <td className="px-6 py-4">
-                        <WorkActaStatusBadge status={acta.status} />
-                      </td>
+                      <td className="px-6 py-4">{new Date(acta.date).toLocaleDateString("es-CO")}</td>
+                      <td className="px-6 py-4 font-semibold">{formatCurrency(getActaTotalValue(acta))}</td>
+                      <td className="px-6 py-4"><WorkActaStatusBadge status={acta.status} /></td>
                     </tr>
                   ))}
               </tbody>
             </table>
           ) : (
-            <div className="p-6">
-              <EmptyState
-                icon={<CalculatorIcon />}
-                title="No hay actas de avance registradas"
-                message="Registra la primera acta de avance para iniciar el seguimiento de cantidades y valores del contrato de obra."
-                actionButton={
-                  <Button
-                    onClick={() => setIsActaFormModalOpen(true)}
-                    leftIcon={<PlusIcon />}
-                  >
-                    Registrar Primera Acta
-                  </Button>
-                }
-              />
-            </div>
+            !isLoading && !error && ( // Muestra el EmptyState solo si no está cargando y no hay error
+              <div className="p-6">
+                <EmptyState
+                  icon={<CalculatorIcon />}
+                  title="No hay actas de avance registradas"
+                  message="Registra la primera acta de avance para iniciar el seguimiento de cantidades y valores del contrato de obra."
+                  actionButton={
+                    <Button
+                      onClick={() => setIsActaFormModalOpen(true)}
+                      leftIcon={<PlusIcon />}
+                    >
+                      Registrar Primera Acta
+                    </Button>
+                  }
+                />
+              </div>
+            )
           )}
         </div>
       </Card>
 
+      {/* Modals */}
       {selectedActa && (
         <WorkActaDetailModal
           isOpen={isActaDetailModalOpen}
           onClose={handleCloseDetail}
           acta={selectedActa}
-          contractItems={contractItems}
-          onUpdate={handleUpdateActa}
+          contractItems={contractItems} // Pasa los ítems reales
+          onUpdate={handleUpdateActa} // Función aún por implementar
         />
       )}
 
       <WorkActaFormModal
         isOpen={isActaFormModalOpen}
         onClose={() => setIsActaFormModalOpen(false)}
-        onSave={handleSaveActa}
-        contractItems={contractItems}
+        onSave={handleSaveActa} // Conectado al backend
+        contractItems={contractItems} // Pasa los ítems reales
         suggestedNumber={nextActaNumber}
-        itemsSummary={itemsSummaryData}
+        itemsSummary={itemsSummaryData} // Pasa el resumen calculado
       />
 
       <ContractModificationFormModal
         isOpen={isModFormModalOpen}
         onClose={() => setIsModFormModalOpen(false)}
-        onSave={handleSaveModification}
+        onSave={handleSaveModification} // Función aún por implementar
       />
     </div>
   );

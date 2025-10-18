@@ -1,34 +1,36 @@
-import React, { useState, useMemo } from 'react';
-// Fix: Corrected import path for types
+import React, { useState, useMemo, useEffect } from 'react'; // <-- Se añade useEffect
 import { Project, Communication, CommunicationStatus } from '../types';
-// Fix: Corrected import path for custom hook
-import { useMockApi } from '../hooks/useMockApi';
+import apiFetch from '../src/services/api'; // <-- Se importa apiFetch
 import CommunicationFilterBar from './CommunicationFilterBar';
 import CommunicationCard from './CommunicationCard';
 import CommunicationFormModal from './CommunicationFormModal';
 import CommunicationDetailModal from './CommunicationDetailModal';
 import Button from './ui/Button';
 import EmptyState from './ui/EmptyState';
-// Fix: Corrected import path for icon
 import { PlusIcon, ChatBubbleLeftRightIcon, ListBulletIcon, TableCellsIcon } from './icons/Icon';
-// Fix: Import useAuth to get the current user for API calls
 import { useAuth } from '../contexts/AuthContext';
 import CommunicationsTable from './CommunicationsTable';
+import { MOCK_PROJECT } from '../src/services/mockData'; // Mantenemos el proyecto mock por ahora
 
+// Se elimina la interfaz de props, ya no recibe 'api'
 interface CommunicationsDashboardProps {
   project: Project;
-  api: ReturnType<typeof useMockApi>;
 }
 
-const CommunicationsDashboard: React.FC<CommunicationsDashboardProps> = ({ project, api }) => {
-  // Fix: Get current user from auth context
+const CommunicationsDashboard: React.FC<CommunicationsDashboardProps> = ({ project }) => {
   const { user } = useAuth();
-  const { communications, isLoading, error, addCommunication, updateCommunicationStatus } = api;
+
+  // --- ¡NUEVO ESTADO LOCAL PARA DATOS REALES! ---
+  const [communications, setCommunications] = useState<Communication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  // ------------------------------------------------
+
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedComm, setSelectedComm] = useState<Communication | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
-  
+
   const [filters, setFilters] = useState({
     searchTerm: '',
     sender: '',
@@ -36,17 +38,36 @@ const CommunicationsDashboard: React.FC<CommunicationsDashboardProps> = ({ proje
     status: 'all',
   });
 
+  // --- useEffect PARA OBTENER DATOS DEL BACKEND ---
+  useEffect(() => {
+    const fetchCommunications = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await apiFetch('/communications');
+        setCommunications(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Ocurrió un error desconocido.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCommunications();
+  }, []);
+  // ----------------------------------------------------
+
   const filteredCommunications = useMemo(() => {
     return communications.filter(comm => {
-      const searchTermMatch = comm.subject.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        const searchTermMatch = comm.subject.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
                               comm.radicado.toLowerCase().includes(filters.searchTerm.toLowerCase());
-      const senderMatch = filters.sender === '' || comm.senderDetails.entity.toLowerCase().includes(filters.sender.toLowerCase());
-      const recipientMatch = filters.recipient === '' || comm.recipientDetails.entity.toLowerCase().includes(filters.recipient.toLowerCase());
-      const statusMatch = filters.status === 'all' || comm.status === filters.status;
-      return searchTermMatch && senderMatch && recipientMatch && statusMatch;
+        const senderMatch = filters.sender === '' || comm.senderDetails.entity.toLowerCase().includes(filters.sender.toLowerCase());
+        const recipientMatch = filters.recipient === '' || comm.recipientDetails.entity.toLowerCase().includes(filters.recipient.toLowerCase());
+        const statusMatch = filters.status === 'all' || comm.status === filters.status;
+        return searchTermMatch && senderMatch && recipientMatch && statusMatch;
     });
   }, [communications, filters]);
-  
+
   const handleOpenForm = () => setIsFormModalOpen(true);
   const handleCloseForm = () => setIsFormModalOpen(false);
 
@@ -54,30 +75,30 @@ const CommunicationsDashboard: React.FC<CommunicationsDashboardProps> = ({ proje
     setSelectedComm(comm);
     setIsDetailModalOpen(true);
   };
-  
+
   const handleCloseDetail = () => {
     setIsDetailModalOpen(false);
     setSelectedComm(null);
   };
 
   const handleSaveCommunication = async (newCommData: Omit<Communication, 'id' | 'uploader' | 'attachments' | 'status' | 'statusHistory'>) => {
-    // Fix: Add user guard and pass user to API call as required
     if (!user) return;
-    await addCommunication(newCommData, user);
-    handleCloseForm();
+    try {
+        const dataToSend = { ...newCommData, uploaderId: user.id };
+        const createdComm = await apiFetch('/communications', {
+            method: 'POST',
+            body: JSON.stringify(dataToSend),
+        });
+        // Actualizamos el estado local para ver el cambio al instante
+        setCommunications(prev => [createdComm, ...prev]);
+        handleCloseForm();
+    } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al guardar la comunicación.');
+    }
   }
 
   const handleStatusChange = async (commId: string, newStatus: CommunicationStatus) => {
-    // Fix: Add user guard and pass user to API call as required
-    if (!user) return;
-    await updateCommunicationStatus(commId, newStatus, user);
-    // Update selected communication to reflect changes immediately in modal
-    const updatedComm = communications.find(c => c.id === commId);
-    if (updatedComm) {
-        // Fix: Use the authenticated user from useAuth instead of a mock user
-        const newHistoryEntry = { status: newStatus, user: user, timestamp: new Date().toISOString() };
-        setSelectedComm(prev => prev ? {...prev, status: newStatus, statusHistory: [...prev.statusHistory, newHistoryEntry] } : null);
-    }
+      // Lógica para actualizar estado (lo haremos más adelante)
   };
 
   return (
@@ -116,7 +137,7 @@ const CommunicationsDashboard: React.FC<CommunicationsDashboardProps> = ({ proje
 
       {isLoading && <div className="text-center p-8">Cargando comunicaciones...</div>}
       {error && <div className="text-center p-8 text-red-500">{error}</div>}
-      
+
       {!isLoading && !error && (
         <>
             {filteredCommunications.length === 0 ? (

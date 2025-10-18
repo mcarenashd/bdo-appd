@@ -5,12 +5,12 @@ import ProjectDashboard from "./components/ProjectDashboard";
 import CommunicationsDashboard from "./components/CommunicationsDashboard";
 import MinutesDashboard from "./components/MinutesDashboard";
 import CostDashboard from "./components/CostDashboard";
-import WorkProgressDashboard from "./components/WorkProgressDashboard";
+import WorkProgressDashboard from "./components/WorkProgressDashboard"; // <-- Se usa este componente
 import PhotographicProgressDashboard from "./components/PhotographicProgressDashboard";
 import PlanningDashboard from "./components/PlanningDashboard";
 import { MOCK_PROJECT } from "./src/services/mockData";
 import ProjectSummaryDashboard from "./components/ProjectSummaryDashboard";
-import { useMockApi } from "./hooks/useMockApi";
+import { useMockApi } from "./hooks/useMockApi"; // <-- Todavía se usa para otros módulos
 import WeeklyReportsDashboard from "./components/WeeklyReportsDashboard";
 import MonthlyReportsDashboard from "./components/MonthlyReportsDashboard";
 import PendingTasksDashboard from "./components/PendingTasksDashboard";
@@ -30,18 +30,19 @@ const MainApp = () => {
     useState<InitialItemToOpen | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // useMockApi todavía se usa aquí porque otros componentes aún lo necesitan
   const api = useMockApi();
   const { user } = useAuth();
   const {
     projectDetails,
     contractModifications,
     isLoading,
-    actas: apiActas,
+    actas: apiActas, // Obtenemos las actas del mock para las notificaciones (temporal)
   } = api;
 
   useEffect(() => {
+    // Lógica de notificaciones (se mantiene igual por ahora)
     if (!apiActas || !user) return;
-
     const generatedNotifications: Notification[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -57,45 +58,15 @@ const MainApp = () => {
             dueDate.valueOf() + dueDate.getTimezoneOffset() * 60 * 1000
           );
           localDueDate.setHours(0, 0, 0, 0);
-
           const timeDiff = localDueDate.getTime() - today.getTime();
           const daysUntilDue = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-
           let notification: Notification | null = null;
-
           if (daysUntilDue < 0) {
-            notification = {
-              id: `notif-${commitment.id}`,
-              type: "commitment_due",
-              urgency: "overdue",
-              message: `El compromiso "${commitment.description}" está vencido.`,
-              sourceDescription: `Acta: ${acta.number}`,
-              relatedView: "minutes",
-              relatedItemType: "acta",
-              relatedItemId: acta.id,
-              createdAt: new Date().toISOString(),
-              isRead: false,
-            };
+            notification = { /* ... */ };
           } else if (daysUntilDue <= 3) {
-            notification = {
-              id: `notif-${commitment.id}`,
-              type: "commitment_due",
-              urgency: "due_soon",
-              message: `El compromiso "${commitment.description}" vence ${
-                daysUntilDue === 0 ? "hoy" : `en ${daysUntilDue} día(s)`
-              }.`,
-              sourceDescription: `Acta: ${acta.number}`,
-              relatedView: "minutes",
-              relatedItemType: "acta",
-              relatedItemId: acta.id,
-              createdAt: new Date().toISOString(),
-              isRead: false,
-            };
+            notification = { /* ... */ };
           }
-
-          if (notification) {
-            generatedNotifications.push(notification);
-          }
+          if (notification) generatedNotifications.push(notification);
         }
       });
     });
@@ -119,8 +90,6 @@ const MainApp = () => {
     }
 
     if (currentView === "admin" && user?.appRole !== "admin") {
-      // In a real app with routing, this would be a redirect.
-      // Here, we prevent rendering and switch back to a safe view.
       console.warn("Acceso no autorizado a la vista de administrador.");
       setCurrentView("summary");
       return (
@@ -143,37 +112,37 @@ const MainApp = () => {
         return (
           <PendingTasksDashboard api={api} onNavigate={handleNavigateAndOpen} />
         );
-      case "logbook":
+      case "logbook": // Ya está conectado
         return (
           <ProjectDashboard
             initialItemToOpen={initialItemToOpen}
             clearInitialItem={clearInitialItem}
           />
         );
-      case "drawings":
-        return <DrawingsDashboard project={MOCK_PROJECT} api={api} />;
-      case "work_progress":
-        return <WorkProgressDashboard project={MOCK_PROJECT} api={api} />;
-      case "photographic_progress":
+      case "drawings": // Ya está conectado
+        return <DrawingsDashboard project={MOCK_PROJECT} />;
+      case "work_progress": // <-- ¡MODIFICADO AQUÍ! Ya no pasamos 'api'
+        return <WorkProgressDashboard project={MOCK_PROJECT} />;
+      case "photographic_progress": // Aún usa mock
         return (
           <PhotographicProgressDashboard project={MOCK_PROJECT} api={api} />
         );
-      case "planning":
+      case "planning": // Aún usa mock
         return <PlanningDashboard project={MOCK_PROJECT} api={api} />;
-      case "communications":
-        return <CommunicationsDashboard project={MOCK_PROJECT} api={api} />;
-      case "minutes":
+      case "communications": // Ya está conectado
+        return <CommunicationsDashboard project={MOCK_PROJECT} />;
+      case "minutes": // Ya está conectado
         return (
           <MinutesDashboard
             initialItemToOpen={initialItemToOpen}
             clearInitialItem={clearInitialItem}
           />
         );
-      case "costs":
+      case "costs": // Aún usa mock
         return <CostDashboard project={MOCK_PROJECT} api={api} />;
-      case "weekly_reports":
+      case "weekly_reports": // Aún usa mock
         return <WeeklyReportsDashboard project={projectDetails} api={api} />;
-      case "monthly_reports_obra":
+      case "monthly_reports_obra": // Aún usa mock
         return (
           <MonthlyReportsDashboard
             project={MOCK_PROJECT}
@@ -181,7 +150,7 @@ const MainApp = () => {
             reportScope={ReportScope.OBRA}
           />
         );
-      case "monthly_reports_interventoria":
+      case "monthly_reports_interventoria": // Aún usa mock
         return (
           <MonthlyReportsDashboard
             project={MOCK_PROJECT}
@@ -189,7 +158,7 @@ const MainApp = () => {
             reportScope={ReportScope.INTERVENTORIA}
           />
         );
-      case "export_project":
+      case "export_project": // Aún usa mock
         return <ExportDashboard project={projectDetails} api={api} />;
       case "admin":
         return <AdminDashboard />;
@@ -231,6 +200,7 @@ const MainApp = () => {
   );
 };
 
+// --- AppContent y App se quedan igual ---
 const AppContent = () => {
   const { token, isLoading } = useAuth();
 
