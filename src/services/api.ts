@@ -9,6 +9,7 @@ const API_URL = 'http://localhost:4000/api';
  */
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('authToken');
+  console.log("apiFetch: Token RECUPERADO de localStorage:", token); // <-- AÑADE ESTE LOG
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
