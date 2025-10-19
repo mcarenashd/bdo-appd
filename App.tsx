@@ -132,7 +132,7 @@ const MainApp = () => {
           <PhotographicProgressDashboard project={MOCK_PROJECT} api={api} />
         );
       case "planning": // Aún usa mock
-        return <PlanningDashboard project={MOCK_PROJECT} api={api} />;
+        return <PlanningDashboard project={MOCK_PROJECT} />; // <-- MODIFICA ESTA LÍNEA
       case "communications": // Ya está conectado
         return <CommunicationsDashboard project={MOCK_PROJECT} />;
       case "minutes": // Ya está conectado
@@ -160,20 +160,14 @@ const MainApp = () => {
             reportScope={ReportScope.OBRA} // Pasamos el scope correcto
           />
         );
-      case "monthly_reports_obra":
-        return (
-          <MonthlyReportsDashboard
-            project={MOCK_PROJECT} // Puedes usar projectDetails si lo necesitas
-            reportScope={ReportScope.OBRA} // Pasamos el scope correcto
-          />
-        );
-      case "monthly_reports_interventoria":
-        return (
-          <MonthlyReportsDashboard
-            project={MOCK_PROJECT} // Puedes usar projectDetails si lo necesitas
-            reportScope={ReportScope.INTERVENTORIA} // Pasamos el scope correcto
-          />
-        );
+
+  case "monthly_reports_interventoria":
+    return (
+      <MonthlyReportsDashboard
+        project={MOCK_PROJECT} // Puedes usar projectDetails si lo necesitas
+        reportScope={ReportScope.INTERVENTORIA} // Pasamos el scope correcto
+      />
+    );
     }
   };
 
