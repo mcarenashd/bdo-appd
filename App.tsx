@@ -201,9 +201,11 @@ const MainApp = () => {
 
 // --- AppContent y App se quedan igual ---
 const AppContent = () => {
+  console.log("AppContent: Rendering...");
   const { token, isLoading } = useAuth();
 
   if (isLoading) {
+    console.log("AppContent: Showing Loading..."); // <-- LOG ADICIONAL
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-xl font-semibold">Cargando...</div>
@@ -212,6 +214,7 @@ const AppContent = () => {
   }
 
   if (!token) {
+    console.log("AppContent: No token, showing LoginScreen..."); // <-- LOG ADICIONAL
     return <LoginScreen />;
   }
 
@@ -219,6 +222,7 @@ const AppContent = () => {
 };
 
 function App() {
+  console.log("App: Rendering AuthProvider..."); // Mantén este log si quieres
   return (
     <AuthProvider>
       <AppContent />

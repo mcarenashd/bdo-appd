@@ -53,17 +53,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
   });
 
   useEffect(() => {
-    const fetchLogEntries = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch("http://localhost:4000/api/log-entries");
-        if (!response.ok) {
-          throw new Error("La respuesta del servidor no fue exitosa.");
-        }
-        const data = await response.json();
-        setLogEntries(data);
-      } catch (err) {
+const fetchLogEntries = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      // const response = await fetch("http://localhost:4000/api/log-entries"); // <-- LÍNEA ANTIGUA
+      // if (!response.ok) { // <-- LÍNEA ANTIGUA
+      //   throw new Error("La respuesta del servidor no fue exitosa."); // <-- LÍNEA ANTIGUA
+      // } // <-- LÍNEA ANTIGUA
+      // const data = await response.json(); // <-- LÍNEA ANTIGUA
+      const data = await apiFetch('/log-entries'); // <-- USA apiFetch
+      setLogEntries(data);
+    } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
         } else {

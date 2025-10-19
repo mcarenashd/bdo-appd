@@ -9,10 +9,16 @@ const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState("");
   const { login, error, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    login(email, password);
-  };
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  console.log("LoginScreen: handleSubmit llamado con email:", email); // <-- LOG 1
+  if (!isLoading) { // Solo llama a login si no está ya cargando
+      console.log("LoginScreen: Llamando a context.login..."); // <-- LOG 2
+      login(email, password); // Llama a la función del contexto
+  } else {
+      console.log("LoginScreen: Intento de login mientras isLoading=true"); // <-- LOG 3 (Por si acaso)
+  }
+};
 
   const handleQuickLogin = (userEmail: string) => {
     setEmail(userEmail);

@@ -18,22 +18,55 @@ async function apiFetch(endpoint: string, options: RequestInit = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  const fetchUrl = `${API_URL}${endpoint}`;
+  console.log(`apiFetch: Intentando fetch a ${fetchUrl} con opciones:`, options); // <-- LOG ANTES
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Error de red o respuesta no válida.' }));
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-  }
+  try {
+    const response = await fetch(fetchUrl, {
+      ...options,
+      headers,
+    });
+    console.log(`apiFetch: Fetch a ${endpoint} completado. Status: ${response.status}`); // <-- LOG DESPUÉS
 
-  // Si la respuesta no tiene contenido (ej. en un DELETE), devolvemos un objeto vacío.
-  const contentType = response.headers.get("content-type");
-  if (contentType && contentType.indexOf("application/json") !== -1) {
-    return response.json();
+    // --- Manejo de errores MEJORADO ---
+    if (!response.ok) {
+      let errorData = { error: `HTTP error! status: ${response.status}` }; // Default error
+      try {
+        // Intenta parsear como JSON, pero prepárate si no lo es
+        const body = await response.text();
+        if (body) {
+            errorData = JSON.parse(body);
+        }
+      } catch (parseError) {
+         console.error(`apiFetch: No se pudo parsear la respuesta de error de ${endpoint}`);
+      }
+      console.error(`apiFetch: Error response from ${endpoint}`, response.status, errorData); // <-- LOG ERROR RESPONSE
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    // --- FIN Manejo de errores MEJORADO ---
+
+
+    const contentType = response.headers.get("content-type");
+    if (response.status === 204 || !contentType || contentType.indexOf("application/json") === -1) {
+        console.log(`apiFetch: Respuesta sin JSON desde ${endpoint}`); // <-- LOG SIN JSON
+        return {}; // Devuelve objeto vacío para 204 No Content o si no es JSON
+    }
+
+    const data = await response.json();
+    console.log(`apiFetch: Respuesta JSON desde ${endpoint}:`, data); // <-- LOG RESPUESTA JSON
+    return data;
+
+  } catch (error) {
+    console.error(`apiFetch: Error en CATCH durante fetch a ${endpoint}`, error); // <-- LOG CATCH BLOCK
+    // Asegúrate de re-lanzar un error que AuthContext pueda leer .message
+    if (error instanceof Error) {
+        throw error;
+    } else {
+        throw new Error('Error desconocido en apiFetch');
+    }
   }
-  return {};
 }
 
 export default apiFetch;
+
+
